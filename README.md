@@ -1,0 +1,259 @@
+# İftar Geri Sayım Uygulaması
+
+Ramazan ayında kullanıcılara iftara kalan süreyi anlık olarak gösteren, konum bazlı web uygulaması.
+
+## 🌟 Özellikler
+
+- ⏰ **Gerçek Zamanlı Geri Sayım**: İftara kalan saat, dakika ve saniye
+- 📍 **Otomatik Konum Tespiti**: Tarayıcı geolocation API ile otomatik konum
+- 🗺️ **Manuel Konum Seçimi**: Ülke > Şehir > İlçe dropdown seçimi
+- 🎨 **Modern Tasarım**: Glassmorphism efektli dark theme
+- 📱 **Responsive**: Tüm cihazlarda mükemmel çalışır
+- ⚡ **Hızlı**: Minimal bağımlılık, hızlı yükleme
+- 💾 **Akıllı Cache**: 30 günlük veri cache'lenir
+
+## 🛠️ Teknolojiler
+
+- **Frontend**: Vanilla JavaScript (ES6+)
+- **Styling**: Tailwind CSS (CDN)
+- **Font**: Plus Jakarta Sans (Google Fonts)
+- **API**: ezanvakti.emushaf.net (Python proxy ile)
+- **CORS Proxy**: Python HTTP server (development + production)
+
+## 📁 Proje Yapısı
+
+```
+iftarakalan/
+├── index.html              # Ana HTML dosyası
+├── proxy_server.py         # CORS proxy server (GEREKLI!)
+├── js/
+│   ├── api.js             # API entegrasyonu (proxy kullanıyor)
+│   ├── location.js        # Konum yönetimi
+│   ├── countdown.js       # Geri sayım mantığı
+│   ├── storage.js         # LocalStorage yönetimi
+│   └── app.js             # Ana uygulama
+├── memory-bank/           # Proje dokümantasyonu
+│   ├── projectbrief.md
+│   ├── productContext.md
+│   ├── systemPatterns.md
+│   ├── techContext.md
+│   ├── activeContext.md
+│   └── progress.md
+└── README.md
+```
+
+## 🚀 Kurulum ve Çalıştırma
+
+### Gereksinimler
+- Python 3.x (proxy server için)
+- Modern web browser
+
+### Development Ortamı
+
+1. **Projeyi klonlayın:**
+```bash
+git clone <repo-url>
+cd iftarakalan
+```
+
+2. **CORS Proxy Server'ı başlatın (ZORUNLU):**
+```bash
+python3 proxy_server.py
+```
+
+Server şu mesajı gösterecek:
+```
+🚀 Proxy server başlatıldı: http://localhost:8081
+📡 Proxy endpoint: http://localhost:8081/api/proxy?url=TARGET_URL
+```
+
+3. **Tarayıcıda açın:**
+```
+http://localhost:8081
+```
+
+### Neden Proxy Server Gerekli?
+
+ezanvakti.emushaf.net API'si CORS (Cross-Origin Resource Sharing) başlıkları sağlamıyor. Bu yüzden browser'dan direkt API çağrısı yapılamaz. Proxy server bu sorunu çözer:
+
+```
+Browser → Proxy (CORS headers ekler) → emushaf API → Proxy → Browser
+```
+
+**Not**: Production deployment için Netlify Functions veya Vercel Edge Functions kullanılmalı.
+
+## 📝 Kullanım
+
+### Otomatik Konum
+1. Uygulamayı açın
+2. Tarayıcı konum izni isteğine "İzin Ver" deyin
+3. Geri sayım otomatik başlar
+
+### Manuel Konum
+1. Konum izni reddedilirse veya "Konum Değiştir" butonuna tıklayın
+2. Ülke, Şehir ve İlçe seçin
+3. Geri sayım başlar
+
+## 🔌 API Entegrasyonu
+
+Uygulama [ezanvakti.emushaf.net](https://ezanvakti.emushaf.net) API'sini **CORS proxy üzerinden** kullanır:
+
+### API Endpoints (Proxy üzerinden)
+```javascript
+// Development
+GET http://localhost:8081/api/proxy?url=https://ezanvakti.emushaf.net/ulkeler
+GET http://localhost:8081/api/proxy?url=https://ezanvakti.emushaf.net/sehirler/2
+GET http://localhost:8081/api/proxy?url=https://ezanvakti.emushaf.net/ilceler/{sehirId}
+GET http://localhost:8081/api/proxy?url=https://ezanvakti.emushaf.net/vakitler/{ilceId}
+```
+
+### Test Sonuçları (2025-10-18)
+- ✅ 81 Türkiye şehri başarıyla yükleniyor
+- ✅ Tüm ilçeler dinamik olarak yükleniyor
+- ✅ 30 günlük namaz vakitleri alınıyor
+- ✅ Cache sistemi çalışıyor
+- ✅ İftar saati: `Aksam` field'ı kullanılıyor
+
+## 💾 Veri Yönetimi
+
+- **LocalStorage** kullanılır
+- Prayer times: 30 gün cache
+- Konum bilgisi: Persistent
+- Günlük otomatik güncelleme
+
+## 🎨 Tasarım
+
+- **Renk Paleti**: Emerald Green (#34d399)
+- **Tema**: Dark mode default
+- **Efektler**: Glassmorphism, backdrop blur
+- **Tipografi**: Plus Jakarta Sans
+
+## 🧪 Testing
+
+### Tamamlanan Testler (2025-10-18)
+- [x] Geolocation timeout → manuel fallback
+- [x] Manuel konum seçimi (81 şehir + tüm ilçeler)
+- [x] API entegrasyonu (proxy üzerinden)
+- [x] 30 günlük veri çekimi
+- [x] Dropdown'ların dinamik doldurulması
+- [x] LocalStorage cache sistemi
+
+### Bekleyen Testler
+- [ ] Geolocation izin verildi senaryosu
+- [ ] Countdown doğruluğu (gerçek zamanlı)
+- [ ] Offline senaryo
+- [ ] Cross-browser (Safari, Firefox)
+- [ ] Mobile devices
+- [ ] Performance metrics
+
+## 📦 Production Deployment
+
+### ⚠️ ÖNEMLİ: CORS Proxy Gereksinimi
+
+Production'da proxy server gereklidir. İki seçenek:
+
+### Seçenek 1: Netlify Functions (ÖNERİLEN)
+
+1. **Function dosyası oluştur:**
+```javascript
+// netlify/functions/proxy.js
+exports.handler = async (event) => {
+  const targetUrl = event.queryStringParameters.url;
+  
+  try {
+    const response = await fetch(targetUrl);
+    const data = await response.json();
+    
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: error.message })
+    };
+  }
+};
+```
+
+2. **api.js'i güncelle:**
+```javascript
+PROXY_URL: "/.netlify/functions/proxy"
+```
+
+3. **Deploy:**
+```bash
+netlify deploy --prod
+```
+
+### Seçenek 2: Vercel Edge Functions
+
+1. **Function dosyası:**
+```javascript
+// api/proxy.js
+export default async function handler(req, res) {
+  const { url } = req.query;
+  const response = await fetch(url);
+  const data = await response.json();
+  
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.json(data);
+}
+```
+
+2. **Deploy:**
+```bash
+vercel --prod
+```
+
+### Seçenek 3: Custom Backend
+
+Railway, Render, Fly.io üzerinde proxy_server.py'yi deploy edin.
+
+## 📱 PWA (Gelecek)
+
+Progressive Web App özellikleri eklenecek:
+- Service Worker
+- Offline support
+- Add to Home Screen
+- Push notifications
+
+## 🤝 Katkıda Bulunma
+
+1. Fork edin
+2. Feature branch oluşturun (`git checkout -b feature/AmazingFeature`)
+3. Commit edin (`git commit -m 'Add some AmazingFeature'`)
+4. Push edin (`git push origin feature/AmazingFeature`)
+5. Pull Request açın
+
+## 📄 Lisans
+
+Bu proje [MIT lisansı](LICENSE) altında lisanslanmıştır.
+
+## 👨‍💻 Geliştirici
+
+Made with ❤️ for Ramadan
+
+## 🔮 Gelecek Özellikler
+
+- [ ] Diğer namaz vakitleri
+- [ ] Bildirim sistemi
+- [ ] Widget desteği
+- [ ] Çoklu dil desteği
+- [ ] Dark/Light theme toggle
+- [ ] Mobil uygulama (Capacitor)
+- [ ] Favori konumlar
+- [ ] İstatistikler ve grafikler
+
+## 📞 İletişim
+
+Sorularınız için [issue açabilirsiniz](../../issues).
+
+---
+
+**Not**: Bu uygulama Ramazan ayında kullanım için tasarlanmıştır.

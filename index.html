@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html class="dark" lang="tr">
+	<head>
+		<meta charset="utf-8" />
+		<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+		<title>İftar Geri Sayım - Iftarakalan.com</title>
+		<meta name="description" content="Ramazan ayında iftara kalan süreyi anlık olarak takip edin. Konumunuza özel iftar saati ve geri sayım." />
+
+		<!-- Fonts -->
+		<link href="https://fonts.googleapis.com" rel="preconnect" />
+		<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+		<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet" />
+
+		<!-- Tailwind CSS -->
+		<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+		<script>
+			tailwind.config = {
+				darkMode: "class",
+				theme: {
+					extend: {
+						colors: {
+							primary: "#34d399",
+							"background-light": "#f0fdf4",
+							"background-dark": "#052e16",
+						},
+						fontFamily: {
+							display: ["Plus Jakarta Sans"],
+						},
+						borderRadius: {
+							DEFAULT: "0.5rem",
+							lg: "1rem",
+							xl: "1.5rem",
+							full: "9999px",
+						},
+					},
+				},
+			};
+		</script>
+
+		<style>
+			body {
+				font-family: "Plus Jakarta Sans", sans-serif;
+			}
+			.countdown-card {
+				background: rgba(255, 255, 255, 0.05);
+				backdrop-filter: blur(10px);
+				-webkit-backdrop-filter: blur(10px);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				transition: all 0.3s ease;
+			}
+			.dark .countdown-card {
+				background: rgba(255, 255, 255, 0.05);
+				border-color: rgba(255, 255, 255, 0.1);
+			}
+			.light .countdown-card {
+				background: rgba(5, 46, 22, 0.05);
+				border-color: rgba(5, 46, 22, 0.1);
+			}
+			.bg-pattern {
+				background-image: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="%2334d399" fill-opacity="0.05"><path d="M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm54-12c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 60c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z"/></g></svg>');
+			}
+			.hidden {
+				display: none !important;
+			}
+		</style>
+	</head>
+	<body class="bg-background-light dark:bg-background-dark font-display text-white transition-colors duration-300">
+		<!-- Loading Overlay -->
+		<div id="loading" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+			<div class="bg-white/10 dark:bg-black/20 border border-white/20 rounded-xl p-8 text-center">
+				<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+				<p class="text-white loading-text">Yükleniyor...</p>
+			</div>
+		</div>
+
+		<div class="relative min-h-screen w-full flex flex-col bg-gradient-to-br from-background-dark via-background-dark to-[#064e3b] bg-pattern overflow-x-hidden">
+			<!-- Header -->
+			<header class="w-full max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+				<div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+					<!-- Logo & Title -->
+					<div class="flex items-center gap-3">
+						<svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+							<path d="M12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2ZM12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C16.42 20 20 16.42 20 12C20 7.58 16.42 4 12 4ZM13.66 16.34L12 15.25L10.34 16.34C9.9 16.63 9.37 16.27 9.53 15.77L10.15 13.9L8.63 12.63C8.24 12.3 8.39 11.66 8.91 11.6L10.79 11.45L11.53 9.71C11.73 9.25 12.27 9.25 12.47 9.71L13.21 11.45L15.09 11.6C15.61 11.66 15.76 12.3 15.37 12.63L13.85 13.9L14.47 15.77C14.63 16.27 14.1 16.63 13.66 16.34Z"></path>
+						</svg>
+						<h2 class="text-white text-xl font-bold">İftar Geri Sayım</h2>
+					</div>
+
+					<!-- Location Info & Change Button -->
+					<div class="flex items-center gap-2 sm:gap-4">
+						<div class="text-white/70 text-sm">
+							<span id="location-info">Konum tespit ediliyor...</span>
+						</div>
+						<button id="change-location-btn" class="bg-primary/20 hover:bg-primary/30 text-white px-4 py-2 rounded-lg text-sm transition-colors">Konum Değiştir</button>
+					</div>
+				</div>
+
+				<!-- Manual Location Selection Panel (Hidden by default) -->
+				<div id="manual-location" class="hidden mt-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+					<h3 class="text-white text-lg font-semibold mb-4">Konum Seçin</h3>
+					<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+						<div>
+							<label class="block text-white/70 text-sm mb-2">Ülke</label>
+							<select id="country-select" class="bg-white/10 dark:bg-black/20 border border-white/20 rounded-lg text-white text-sm focus:ring-primary focus:border-primary block w-full p-2.5" disabled>
+								<option value="2" selected>Türkiye</option>
+							</select>
+						</div>
+						<div>
+							<label class="block text-white/70 text-sm mb-2">Şehir</label>
+							<select id="city-select" class="bg-white/10 dark:bg-black/20 border border-white/20 rounded-lg text-white text-sm focus:ring-primary focus:border-primary block w-full p-2.5">
+								<option value="">Şehir seçin...</option>
+							</select>
+						</div>
+						<div>
+							<label class="block text-white/70 text-sm mb-2">İlçe</label>
+							<select id="district-select" class="bg-white/10 dark:bg-black/20 border border-white/20 rounded-lg text-white text-sm focus:ring-primary focus:border-primary block w-full p-2.5" disabled>
+								<option value="">Önce şehir seçin...</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</header>
+
+			<!-- Main Content -->
+			<main class="flex-1 flex flex-col items-center justify-center text-center p-4">
+				<div class="space-y-8 max-w-4xl mx-auto">
+					<!-- Error Message -->
+					<div id="error-message" class="hidden bg-red-500/20 border border-red-500/30 rounded-lg p-4 text-red-200 text-sm max-w-md mx-auto">Hata mesajı</div>
+
+					<!-- Main Title -->
+					<h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight">İftara Kalan Süre</h1>
+
+					<!-- Countdown Cards -->
+					<div class="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+						<!-- Hours Card -->
+						<div class="countdown-card rounded-xl p-4 sm:p-6 text-white w-28 h-28 sm:w-36 sm:h-36 md:w-48 md:h-48 flex flex-col items-center justify-center">
+							<span id="hours" class="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter tabular-nums">00</span>
+							<span class="text-sm sm:text-base md:text-lg opacity-70 mt-2">Saat</span>
+						</div>
+
+						<!-- Minutes Card -->
+						<div class="countdown-card rounded-xl p-4 sm:p-6 text-white w-28 h-28 sm:w-36 sm:h-36 md:w-48 md:h-48 flex flex-col items-center justify-center">
+							<span id="minutes" class="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter tabular-nums">00</span>
+							<span class="text-sm sm:text-base md:text-lg opacity-70 mt-2">Dakika</span>
+						</div>
+
+						<!-- Seconds Card -->
+						<div class="countdown-card rounded-xl p-4 sm:p-6 text-white w-28 h-28 sm:w-36 sm:h-36 md:w-48 md:h-48 flex flex-col items-center justify-center">
+							<span id="seconds" class="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter tabular-nums">00</span>
+							<span class="text-sm sm:text-base md:text-lg opacity-70 mt-2">Saniye</span>
+						</div>
+					</div>
+
+					<!-- Iftar Time Display -->
+					<div class="bg-primary/20 dark:bg-primary/20 text-white py-3 px-6 rounded-lg inline-block shadow-lg">
+						<p class="text-lg font-medium">İftar Saati: <span id="iftar-time" class="font-bold">--:--</span></p>
+					</div>
+				</div>
+			</main>
+
+			<!-- Footer -->
+			<footer class="w-full text-center p-4">
+				<p class="text-sm text-white/50">Made with ❤️ for Ramadan</p>
+			</footer>
+		</div>
+
+		<!-- JavaScript Modules -->
+		<script src="js/storage.js"></script>
+		<script src="js/api.js"></script>
+		<script src="js/location.js"></script>
+		<script src="js/countdown.js"></script>
+		<script src="js/app.js"></script>
+	</body>
+</html>
