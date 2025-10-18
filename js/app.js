@@ -6,9 +6,11 @@ const App = {
 	state: {
 		location: null,
 		iftarTime: null,
+		targetDate: null, // Hedef tarih (bugün/yarın)
 		isLoading: false,
 		error: null,
 		showManualSelection: false,
+		tomorrowDataRequested: false, // Yarının verisi için flag
 	},
 
 	// DOM elementleri
@@ -130,63 +132,126 @@ const App = {
 	 */
 	async loadIftarTimeAndStartCountdown(districtId) {
 		try {
+			console.log("⏰ loadIftarTimeAndStartCountdown çağrıldı, İlçe ID:", districtId);
 			this.showLoading("İftar saati yükleniyor...");
 
 			// İftar saatini API'den al
-			const iftarData = await API.getTodayIftarTime(districtId);
+			console.log("🌐 getTodayIftarTime çağrılıyor...");
+			let iftarData = await API.getTodayIftarTime(districtId);
+
+			// Eğer bugünün iftarı geçtiyse, yarının saatini al
+			if (this.isIftarPassed(iftarData.time)) {
+				console.log("⏭️ Bugünün iftarı geçti, yarının saati alınıyor...");
+				iftarData = await API.getTomorrowIftarTime(districtId);
+				this.showError("Bugünün iftarı geçti. Yarının iftarına kalan süre gösteriliyor.");
+			}
+
 			this.state.iftarTime = iftarData.time;
+			this.state.targetDate = iftarData.date; // Tarih bilgisini state'e kaydet
 
 			// Cache durumunu logla
-			console.log("İftar saati:", iftarData.time, "(Cache:", iftarData.fromCache ? "Evet" : "Hayır", ")");
+			console.log("✅ İftar saati alındı:", iftarData.time, "(Cache:", iftarData.fromCache ? "Evet" : "Hayır", ")");
+			console.log("📊 Hedef tarih:", iftarData.date);
+			console.log("📊 Full data:", iftarData.fullData);
 
 			// UI'ı güncelle
+			console.log("🎨 UI güncelleniyor...");
 			this.updateIftarTimeDisplay(iftarData.time);
 			this.updateLocationInfo();
 
-			// Geri sayımı başlat
-			this.startCountdown(iftarData.time);
+			// Geri sayımı başlat (tarih bilgisi ile)
+			const targetDate = iftarData.date;
+			console.log("🚀 Countdown başlatılıyor:", iftarData.time, "Hedef tarih:", targetDate);
+
+			// CALLBACK fonksiyonunu tanımla
+			const countdownCallback = (countdown) => {
+				this.updateCountdownDisplay(countdown);
+
+				if (countdown.needsTomorrowData && !targetDate && !this.state.isLoading && !this.state.tomorrowDataRequested) {
+					console.log("📅 İftar geçti, yarının verisi alınıyor");
+					this.state.tomorrowDataRequested = true;
+					this.loadTomorrowIftarTime();
+				}
+			};
+
+			// Countdown'u başlat - tarih varsa 3 parametre, yoksa 2
+			if (targetDate) {
+				console.log("  → Tarih ile başlatılıyor:", targetDate);
+				Countdown.start(iftarData.time, targetDate, countdownCallback);
+			} else {
+				console.log("  → Bugünün tarihi ile başlatılıyor");
+				Countdown.start(iftarData.time, countdownCallback);
+			}
+
+			console.log("✅ Countdown başlatıldı!");
 
 			this.hideLoading();
-			this.hideError();
 		} catch (error) {
-			console.error("İftar saati yükleme hatası:", error);
+			console.error("❌ İftar saati yükleme hatası:", error);
+			console.error("Hata detayı:", error.message, error.stack);
 			this.showError("İftar saati yüklenemedi. Lütfen tekrar deneyin.");
 			this.hideLoading();
 		}
 	},
 
 	/**
+	 * İftar vakti geçti mi kontrol et
+	 * @param {string} iftarTime - İftar saati (HH:MM)
+	 * @returns {boolean} Geçme durumu
+	 */
+	isIftarPassed(iftarTime) {
+		const now = new Date();
+		const [hours, minutes] = iftarTime.split(":").map(Number);
+
+		const iftarDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+
+		return now > iftarDate;
+	},
+
+	/**
 	 * Geri sayımı başlat
 	 */
-	startCountdown(iftarTime) {
-		Countdown.start(iftarTime, (countdown) => {
-			// İftar vakti geçtiyse yarının verisini al
-			if (countdown.needsTomorrowData && !this.state.isLoading) {
-				this.loadTomorrowIftarTime();
-				return;
-			}
-
-			// Countdown'u güncelle
-			this.updateCountdownDisplay(countdown);
-		});
-	},
+	// DEPRECATED - Artık loadIftarTimeAndStartCountdown içinde direkt çağrılıyor
 
 	/**
 	 * Yarının iftar saatini yükle
 	 */
 	async loadTomorrowIftarTime() {
 		try {
-			console.log("İftar vakti geçti, yarının saati yükleniyor...");
+			console.log("📅 loadTomorrowIftarTime çağrıldı");
+
+			// Önce mevcut countdown'u DURDUR
+			Countdown.stop();
+
+			this.showLoading("Yarının iftar saati yükleniyor...");
+
 			const tomorrowData = await API.getTomorrowIftarTime(this.state.location.ilceId);
+			console.log("✅ Yarının iftar saati:", tomorrowData.time);
 
 			this.state.iftarTime = tomorrowData.time;
-			this.updateIftarTimeDisplay(tomorrowData.time);
+			this.state.tomorrowDataRequested = false; // Reset flag for next day
 
-			// Geri sayımı yeniden başlat
-			this.startCountdown(tomorrowData.time);
+			this.state.iftarTime = tomorrowData.time;
+			this.state.targetDate = tomorrowData.date;
+
+			this.updateIftarTimeDisplay(tomorrowData.time);
+			this.showError("Bugünün iftarı geçti. Yarına kalan süre gösteriliyor.");
+
+			// Geri sayımı yeniden başlat (YARIN TARİHİ ile!)
+			console.log("🔄 Yarının countdown'u başlatılıyor, tarih:", tomorrowData.date);
+
+			const countdownCallback = (countdown) => {
+				this.updateCountdownDisplay(countdown);
+			};
+
+			Countdown.stop(); // Önce durdur
+			Countdown.start(tomorrowData.time, tomorrowData.date, countdownCallback);
+
+			this.hideLoading();
 		} catch (error) {
-			console.error("Yarının iftar saati yüklenemedi:", error);
+			console.error("❌ Yarının iftar saati yüklenemedi:", error);
 			this.showError("Yarının iftar saati yüklenemedi.");
+			this.hideLoading();
 		}
 	},
 
@@ -298,18 +363,24 @@ const App = {
 	 * Countdown görüntüsünü güncelle
 	 */
 	updateCountdownDisplay(countdown) {
+		console.log("🎯 updateCountdownDisplay:", countdown);
+
 		if (this.elements.hoursDisplay) {
 			this.elements.hoursDisplay.textContent = Countdown.formatNumber(countdown.hours);
+			console.log("  Saat:", countdown.hours);
 		}
 		if (this.elements.minutesDisplay) {
 			this.elements.minutesDisplay.textContent = Countdown.formatNumber(countdown.minutes);
+			console.log("  Dakika:", countdown.minutes);
 		}
 		if (this.elements.secondsDisplay) {
 			this.elements.secondsDisplay.textContent = Countdown.formatNumber(countdown.seconds);
+			console.log("  Saniye:", countdown.seconds);
 		}
 
 		// Mesaj varsa göster
 		if (countdown.message) {
+			console.log("📢 Mesaj:", countdown.message);
 			this.showError(countdown.message);
 		}
 	},

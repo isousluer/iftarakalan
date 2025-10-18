@@ -93,18 +93,25 @@ const API = {
 	 */
 	async getTodayIftarTime(districtId) {
 		try {
+			console.log("📅 Bugünün iftar saati alınıyor...");
+
 			// Cache kontrolü
 			if (Storage.isPrayerTimesValid(districtId)) {
 				const cached = Storage.getPrayerTimes();
-				const today = new Date().toISOString().split("T")[0];
+				const today = new Date();
+				const todayStr = `${today.getDate().toString().padStart(2, "0")}.${(today.getMonth() + 1).toString().padStart(2, "0")}.${today.getFullYear()}`;
+
+				console.log("🔍 Cache'de aranan tarih:", todayStr);
+
 				const todayData = cached.data.find((day) => {
-					const dayDate = day.MiladiTarihKisaIso8601;
-					return dayDate === today;
+					return day.MiladiTarihKisa === todayStr;
 				});
 
 				if (todayData) {
+					console.log("✅ Cache'den alındı:", todayData.Aksam, "Tarih:", todayStr);
 					return {
 						time: todayData.Aksam, // İftar saati = Akşam namazı
+						date: todayStr, // TARİH BİLGİSİ EKLE!
 						fullData: todayData,
 						fromCache: true,
 					};
@@ -112,29 +119,42 @@ const API = {
 			}
 
 			// Cache yoksa veya geçersizse API'den al
+			console.log("🌐 API'den alınıyor...");
 			const prayerTimes = await this.getPrayerTimes(districtId);
+			console.log("✅ API'den", prayerTimes.length, "günlük veri alındı");
 
 			// Cache'e kaydet
 			Storage.savePrayerTimes(districtId, prayerTimes);
 
 			// Bugünün verisini bul
-			const today = new Date().toISOString().split("T")[0];
+			const today = new Date();
+			const todayStr = `${today.getDate().toString().padStart(2, "0")}.${(today.getMonth() + 1).toString().padStart(2, "0")}.${today.getFullYear()}`;
+
+			console.log("🔍 API'de aranan tarih:", todayStr);
+			console.log("İlk gün örneği:", prayerTimes[0]);
+
 			const todayData = prayerTimes.find((day) => {
-				const dayDate = day.MiladiTarihKisaIso8601;
-				return dayDate === today;
+				return day.MiladiTarihKisa === todayStr;
 			});
 
 			if (!todayData) {
+				console.error("❌ Bugünün verisi bulunamadı. Aranan:", todayStr);
+				console.error(
+					"Mevcut tarihler:",
+					prayerTimes.map((d) => d.MiladiTarihKisa)
+				);
 				throw new Error("Bugünün iftar saati bulunamadı");
 			}
 
+			console.log("✅ Bugünün iftar saati:", todayData.Aksam);
 			return {
 				time: todayData.Aksam,
+				date: todayStr, // Tarih bilgisi de ekle
 				fullData: todayData,
 				fromCache: false,
 			};
 		} catch (error) {
-			console.error("Get today iftar time error:", error);
+			console.error("❌ Get today iftar time error:", error);
 			throw error;
 		}
 	},
@@ -150,19 +170,20 @@ const API = {
 
 			const tomorrow = new Date();
 			tomorrow.setDate(tomorrow.getDate() + 1);
-			const tomorrowDate = tomorrow.toISOString().split("T")[0];
+			const tomorrowStr = `${tomorrow.getDate().toString().padStart(2, "0")}.${(tomorrow.getMonth() + 1).toString().padStart(2, "0")}.${tomorrow.getFullYear()}`;
 
 			const tomorrowData = prayerTimes.find((day) => {
-				const dayDate = day.MiladiTarihKisaIso8601;
-				return dayDate === tomorrowDate;
+				return day.MiladiTarihKisa === tomorrowStr;
 			});
 
 			if (!tomorrowData) {
 				throw new Error("Yarının iftar saati bulunamadı");
 			}
 
+			console.log("✅ Yarının iftar saati:", tomorrowData.Aksam, "Tarih:", tomorrowStr);
 			return {
 				time: tomorrowData.Aksam,
+				date: tomorrowStr, // YARIN TARİHİ
 				fullData: tomorrowData,
 				isTomorrow: true,
 			};

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Clear Cache</title>
+</head>
+<body>
+    <h1>LocalStorage Temizle</h1>
+    <button onclick="clearStorage()">Temizle</button>
+    <pre id="result"></pre>
+
+    <script>
+        function clearStorage() {
+            const result = document.getElementById('result');
+            const before = {...localStorage};
+            
+            localStorage.clear();
+            
+            result.textContent = 'Temizlenen veriler:\n' + JSON.stringify(before, null, 2);
+            
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 2000);
+        }
+        
+        // Otomatik temizle
+        window.onload = clearStorage;
+    </script>
+</body>
+</html>

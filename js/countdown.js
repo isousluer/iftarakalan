@@ -10,21 +10,29 @@ const Countdown = {
 	/**
 	 * Geri sayımı başlat
 	 * @param {string} iftarTime - İftar saati (HH:MM formatında)
+	 * @param {string} targetDate - Hedef tarih (DD.MM.YYYY formatında, opsiyonel)
 	 * @param {Function} callback - Her saniye çağrılacak callback
 	 */
-	start(iftarTime, callback) {
+	start(iftarTime, targetDate, callback) {
+		// Eğer 2 parametre geldiyse, ikincisi callback'tir
+		if (typeof targetDate === "function") {
+			callback = targetDate;
+			targetDate = null;
+		}
+
 		// Önceki interval'i temizle
 		this.stop();
 
 		this.currentIftarTime = iftarTime;
+		this.targetDate = targetDate; // Hedef tarihi sakla
 
 		// İlk hesaplamayı hemen yap
-		const countdown = this.calculate(iftarTime);
+		const countdown = this.calculate(iftarTime, targetDate);
 		callback(countdown);
 
 		// Her saniye güncelle
 		this.intervalId = setInterval(() => {
-			const countdown = this.calculate(iftarTime);
+			const countdown = this.calculate(iftarTime, targetDate);
 			callback(countdown);
 		}, 1000);
 	},
@@ -42,24 +50,38 @@ const Countdown = {
 	/**
 	 * Geri sayımı hesapla
 	 * @param {string} iftarTime - İftar saati (HH:MM formatında)
+	 * @param {string} targetDate - Hedef tarih (DD.MM.YYYY formatında, opsiyonel)
 	 * @returns {Object} Geri sayım {hours, minutes, seconds, isExpired, message}
 	 */
-	calculate(iftarTime) {
+	calculate(iftarTime, targetDate = null) {
 		try {
 			const now = new Date();
-
-			// Bugünün tarihini al
-			const today = new Date(now);
 			const [hours, minutes] = iftarTime.split(":").map(Number);
 
-			// İftar zamanını bugüne set et
-			const iftarDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes, 0);
+			let iftarDate;
+
+			if (targetDate) {
+				// Özel tarih verilmişse (yarın için)
+				const [day, month, year] = targetDate.split(".").map(Number);
+				iftarDate = new Date(year, month - 1, day, hours, minutes, 0);
+				console.log("📅 Hedef tarih kullanılıyor:", targetDate, "→", iftarDate);
+			} else {
+				// Bugünün tarihi kullan
+				iftarDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+			}
 
 			// Zaman farkını hesapla
 			let diff = iftarDate - now;
 
-			// Eğer iftar vakti geçtiyse
-			if (diff <= 0) {
+			console.log("⏰ Hesaplama:", {
+				şimdi: now.toLocaleString("tr-TR"),
+				hedef: iftarDate.toLocaleString("tr-TR"),
+				fark: Math.floor(diff / 1000) + " saniye",
+			});
+
+			// Eğer iftar vakti geçtiyse VE targetDate verilmemişse
+			if (diff <= 0 && !targetDate) {
+				console.log("⚠️ İftar geçti, yarının verisi gerekli");
 				this.isIftarPassed = true;
 				return {
 					hours: 0,
@@ -68,6 +90,19 @@ const Countdown = {
 					isExpired: true,
 					message: "İftar vakti geçti. Yarının iftar saati yükleniyor...",
 					needsTomorrowData: true,
+				};
+			}
+
+			// Eğer yarının tarihi kullanılıyorsa ama yine geçtiyse (saat ileri gitmiş)
+			if (diff <= 0 && targetDate) {
+				console.error("❌ Yarının iftar saati bile geçmiş! Sistem saati kontrol edilmeli.");
+				return {
+					hours: 0,
+					minutes: 0,
+					seconds: 0,
+					isExpired: true,
+					message: "Sistem saati hatalı olabilir.",
+					error: true,
 				};
 			}
 
@@ -88,7 +123,7 @@ const Countdown = {
 				needsTomorrowData: false,
 			};
 		} catch (error) {
-			console.error("Countdown calculate error:", error);
+			console.error("❌ Countdown calculate error:", error);
 			return {
 				hours: 0,
 				minutes: 0,
