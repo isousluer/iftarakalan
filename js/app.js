@@ -5,6 +5,7 @@
 const App = {
 	state: {
 		location: null,
+		autoLocation: null, // Geolocation ile alınan ilk konum
 		iftarTime: null,
 		targetDate: null, // Hedef tarih (bugün/yarın)
 		isLoading: false,
@@ -27,19 +28,32 @@ const App = {
 		districtSelect: null,
 		manualLocationPanel: null,
 		changeLocationBtn: null,
+		closePanelBtn: null,
+		resetLocationBtn: null,
 	},
 
 	/**
 	 * Uygulamayı başlat
 	 */
 	async init() {
-		console.log("🚀 Uygulama başlatılıyor...");
-
 		// DOM elementlerini al
 		this.initElements();
 
 		// Event listener'ları ekle
 		this.attachEventListeners();
+
+		// Kaydedilmiş konumları yükle
+		const savedLocation = Storage.getLocation();
+		const savedAutoLocation = Storage.getAutoLocation();
+
+		if (savedAutoLocation && savedAutoLocation.method === "geolocation") {
+			this.state.autoLocation = savedAutoLocation;
+		}
+
+		// Eğer manuel seçim yapılmışsa ve otomatik konum varsa → reset butonu göster
+		if (savedLocation && savedLocation.method === "manual" && this.state.autoLocation) {
+			this.showResetButton();
+		}
 
 		// Otomatik konum tespiti dene
 		await this.startLocationDetection();
@@ -62,6 +76,8 @@ const App = {
 			districtSelect: document.getElementById("district-select"),
 			manualLocationPanel: document.getElementById("manual-location"),
 			changeLocationBtn: document.getElementById("change-location-btn"),
+			closePanelBtn: document.getElementById("close-panel-btn"),
+			resetLocationBtn: document.getElementById("reset-location-btn"),
 		};
 	},
 
@@ -96,6 +112,20 @@ const App = {
 				this.showManualLocationPanel();
 			});
 		}
+
+		// Panel kapatma butonu
+		if (this.elements.closePanelBtn) {
+			this.elements.closePanelBtn.addEventListener("click", () => {
+				this.hideManualLocationPanel();
+			});
+		}
+
+		// Otomatik konuma dön butonu
+		if (this.elements.resetLocationBtn) {
+			this.elements.resetLocationBtn.addEventListener("click", async () => {
+				await this.resetToAutoLocation();
+			});
+		}
 	},
 
 	/**
@@ -108,6 +138,13 @@ const App = {
 			// Otomatik konum tespiti
 			const location = await LocationManager.autoDetectLocation();
 			this.state.location = location;
+
+			// İlk otomatik konumu sakla (reset için)
+			if (location.method === "geolocation") {
+				this.state.autoLocation = location;
+				Storage.saveAutoLocation(location); // STORAGE'A KAYDET!
+				// Reset butonu GÖSTERİLMEZ - sadece manuel seçim sonrası gösterilir
+			}
 
 			// İftar saatini al ve geri sayımı başlat
 			await this.loadIftarTimeAndStartCountdown(location.ilceId);
@@ -132,43 +169,32 @@ const App = {
 	 */
 	async loadIftarTimeAndStartCountdown(districtId) {
 		try {
-			console.log("⏰ loadIftarTimeAndStartCountdown çağrıldı, İlçe ID:", districtId);
 			this.showLoading("İftar saati yükleniyor...");
 
 			// İftar saatini API'den al
-			console.log("🌐 getTodayIftarTime çağrılıyor...");
 			let iftarData = await API.getTodayIftarTime(districtId);
 
 			// Eğer bugünün iftarı geçtiyse, yarının saatini al
 			if (this.isIftarPassed(iftarData.time)) {
-				console.log("⏭️ Bugünün iftarı geçti, yarının saati alınıyor...");
 				iftarData = await API.getTomorrowIftarTime(districtId);
 				this.showError("Bugünün iftarı geçti. Yarının iftarına kalan süre gösteriliyor.");
 			}
 
 			this.state.iftarTime = iftarData.time;
-			this.state.targetDate = iftarData.date; // Tarih bilgisini state'e kaydet
-
-			// Cache durumunu logla
-			console.log("✅ İftar saati alındı:", iftarData.time, "(Cache:", iftarData.fromCache ? "Evet" : "Hayır", ")");
-			console.log("📊 Hedef tarih:", iftarData.date);
-			console.log("📊 Full data:", iftarData.fullData);
+			this.state.targetDate = iftarData.date;
 
 			// UI'ı güncelle
-			console.log("🎨 UI güncelleniyor...");
 			this.updateIftarTimeDisplay(iftarData.time);
 			this.updateLocationInfo();
 
 			// Geri sayımı başlat (tarih bilgisi ile)
 			const targetDate = iftarData.date;
-			console.log("🚀 Countdown başlatılıyor:", iftarData.time, "Hedef tarih:", targetDate);
 
 			// CALLBACK fonksiyonunu tanımla
 			const countdownCallback = (countdown) => {
 				this.updateCountdownDisplay(countdown);
 
 				if (countdown.needsTomorrowData && !targetDate && !this.state.isLoading && !this.state.tomorrowDataRequested) {
-					console.log("📅 İftar geçti, yarının verisi alınıyor");
 					this.state.tomorrowDataRequested = true;
 					this.loadTomorrowIftarTime();
 				}
@@ -176,19 +202,14 @@ const App = {
 
 			// Countdown'u başlat - tarih varsa 3 parametre, yoksa 2
 			if (targetDate) {
-				console.log("  → Tarih ile başlatılıyor:", targetDate);
 				Countdown.start(iftarData.time, targetDate, countdownCallback);
 			} else {
-				console.log("  → Bugünün tarihi ile başlatılıyor");
 				Countdown.start(iftarData.time, countdownCallback);
 			}
-
-			console.log("✅ Countdown başlatıldı!");
 
 			this.hideLoading();
 		} catch (error) {
 			console.error("❌ İftar saati yükleme hatası:", error);
-			console.error("Hata detayı:", error.message, error.stack);
 			this.showError("İftar saati yüklenemedi. Lütfen tekrar deneyin.");
 			this.hideLoading();
 		}
@@ -218,33 +239,23 @@ const App = {
 	 */
 	async loadTomorrowIftarTime() {
 		try {
-			console.log("📅 loadTomorrowIftarTime çağrıldı");
-
-			// Önce mevcut countdown'u DURDUR
 			Countdown.stop();
-
 			this.showLoading("Yarının iftar saati yükleniyor...");
 
 			const tomorrowData = await API.getTomorrowIftarTime(this.state.location.ilceId);
-			console.log("✅ Yarının iftar saati:", tomorrowData.time);
-
-			this.state.iftarTime = tomorrowData.time;
-			this.state.tomorrowDataRequested = false; // Reset flag for next day
 
 			this.state.iftarTime = tomorrowData.time;
 			this.state.targetDate = tomorrowData.date;
+			this.state.tomorrowDataRequested = false;
 
 			this.updateIftarTimeDisplay(tomorrowData.time);
 			this.showError("Bugünün iftarı geçti. Yarına kalan süre gösteriliyor.");
 
-			// Geri sayımı yeniden başlat (YARIN TARİHİ ile!)
-			console.log("🔄 Yarının countdown'u başlatılıyor, tarih:", tomorrowData.date);
-
+			// Geri sayımı yeniden başlat
 			const countdownCallback = (countdown) => {
 				this.updateCountdownDisplay(countdown);
 			};
 
-			Countdown.stop(); // Önce durdur
 			Countdown.start(tomorrowData.time, tomorrowData.date, countdownCallback);
 
 			this.hideLoading();
@@ -260,25 +271,95 @@ const App = {
 	 */
 	async showManualLocationPanel() {
 		try {
-			console.log("📍 Manuel konum paneli açılıyor...");
 			this.state.showManualSelection = true;
 
 			// Panel görünür yap
 			if (this.elements.manualLocationPanel) {
-				console.log("✅ Panel elementi bulundu, hidden class kaldırılıyor");
 				this.elements.manualLocationPanel.classList.remove("hidden");
-			} else {
-				console.error("❌ Panel elementi bulunamadı!");
 			}
 
 			// Şehirleri yükle
-			console.log("🌆 loadCities() çağrılıyor...");
 			await this.loadCities();
-			console.log("✅ loadCities() tamamlandı");
+
+			// Eğer mevcut konum varsa, dropdown'ları otomatik doldur
+			if (this.state.location) {
+				// Şehri seç
+				if (this.elements.citySelect && this.state.location.sehirId) {
+					this.elements.citySelect.value = this.state.location.sehirId;
+				}
+
+				// İlçeleri yükle ve seç
+				if (this.state.location.sehirId) {
+					await this.loadDistricts(this.state.location.sehirId);
+
+					// İlçeyi seç
+					if (this.elements.districtSelect && this.state.location.ilceId) {
+						this.elements.districtSelect.value = this.state.location.ilceId;
+					}
+				}
+			}
 		} catch (error) {
 			console.error("❌ Manuel konum paneli hatası:", error);
-			console.error("Hata detayı:", error.message, error.stack);
 			this.showError("Konum listesi yüklenemedi.");
+		}
+	},
+
+	/**
+	 * Manuel konum panelini gizle
+	 */
+	hideManualLocationPanel() {
+		if (this.elements.manualLocationPanel) {
+			this.elements.manualLocationPanel.classList.add("hidden");
+		}
+		this.state.showManualSelection = false;
+	},
+
+	/**
+	 * Otomatik konuma geri dön
+	 */
+	async resetToAutoLocation() {
+		try {
+			if (!this.state.autoLocation) {
+				this.hideManualLocationPanel();
+				await this.startLocationDetection();
+				return;
+			}
+
+			// Otomatik konumu geri yükle
+			this.state.location = this.state.autoLocation;
+
+			// STORAGE'A KAYDET! (Hard refresh sonrası korunsun)
+			Storage.saveLocation(this.state.autoLocation);
+
+			// Manuel paneli gizle
+			this.hideManualLocationPanel();
+
+			// Reset butonunu gizle
+			this.hideResetButton();
+
+			// İftar saatini ve countdown'u güncelle
+			await this.loadIftarTimeAndStartCountdown(this.state.autoLocation.ilceId);
+		} catch (error) {
+			console.error("❌ Otomatik konuma dönülemedi:", error);
+			this.showError("Otomatik konuma dönülemedi.");
+		}
+	},
+
+	/**
+	 * Reset butonunu göster
+	 */
+	showResetButton() {
+		if (this.elements.resetLocationBtn) {
+			this.elements.resetLocationBtn.classList.remove("hidden");
+		}
+	},
+
+	/**
+	 * Reset butonunu gizle
+	 */
+	hideResetButton() {
+		if (this.elements.resetLocationBtn) {
+			this.elements.resetLocationBtn.classList.add("hidden");
 		}
 	},
 
@@ -287,10 +368,7 @@ const App = {
 	 */
 	async loadCities() {
 		try {
-			console.log("🏙️ Şehirler yükleniyor...");
 			const cities = await LocationManager.populateDropdown("cities", "2");
-			console.log("✅ Şehirler alındı:", cities.length, "şehir");
-			console.log("İlk şehir örneği:", cities[0]);
 
 			if (this.elements.citySelect) {
 				this.elements.citySelect.innerHTML = '<option value="">Şehir seçin...</option>';
@@ -346,8 +424,11 @@ const App = {
 			this.state.location = location;
 
 			// Manuel paneli gizle
-			if (this.elements.manualLocationPanel) {
-				this.elements.manualLocationPanel.classList.add("hidden");
+			this.hideManualLocationPanel();
+
+			// Reset butonunu göster (manuel seçim yapıldı)
+			if (this.state.autoLocation) {
+				this.showResetButton();
 			}
 
 			// İftar saatini yükle ve geri sayımı başlat
@@ -363,24 +444,23 @@ const App = {
 	 * Countdown görüntüsünü güncelle
 	 */
 	updateCountdownDisplay(countdown) {
-		console.log("🎯 updateCountdownDisplay:", countdown);
+		// Sadece hata durumunda log at
+		if (countdown.error) {
+			console.error("❌ Countdown hatası:", countdown);
+		}
 
 		if (this.elements.hoursDisplay) {
 			this.elements.hoursDisplay.textContent = Countdown.formatNumber(countdown.hours);
-			console.log("  Saat:", countdown.hours);
 		}
 		if (this.elements.minutesDisplay) {
 			this.elements.minutesDisplay.textContent = Countdown.formatNumber(countdown.minutes);
-			console.log("  Dakika:", countdown.minutes);
 		}
 		if (this.elements.secondsDisplay) {
 			this.elements.secondsDisplay.textContent = Countdown.formatNumber(countdown.seconds);
-			console.log("  Saniye:", countdown.seconds);
 		}
 
 		// Mesaj varsa göster
 		if (countdown.message) {
-			console.log("📢 Mesaj:", countdown.message);
 			this.showError(countdown.message);
 		}
 	},

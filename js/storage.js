@@ -75,6 +75,22 @@ const Storage = {
 	},
 
 	/**
+	 * Otomatik konumu kaydet (geolocation)
+	 * @param {Object} location - Konum bilgisi
+	 */
+	saveAutoLocation(location) {
+		return this.set("autoLocation", location);
+	},
+
+	/**
+	 * Otomatik konumu al
+	 * @returns {Object|null} Konum bilgisi
+	 */
+	getAutoLocation() {
+		return this.get("autoLocation");
+	},
+
+	/**
 	 * Namaz vakitlerini kaydet
 	 * @param {string} ilceId - İlçe ID
 	 * @param {Array} data - 30 günlük veri

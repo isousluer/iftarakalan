@@ -9,19 +9,13 @@ const LocationManager = {
 	 */
 	async getGeolocation() {
 		return new Promise((resolve, reject) => {
-			console.log("📍 Geolocation API başlatılıyor...");
-
 			if (!navigator.geolocation) {
-				console.error("❌ Geolocation desteklenmiyor");
 				reject(new Error("Geolocation desteklenmiyor"));
 				return;
 			}
 
-			console.log("⏳ Konum izni bekleniyor (timeout: 10 saniye)...");
-
 			navigator.geolocation.getCurrentPosition(
 				(position) => {
-					console.log("✅ Konum alındı:", position.coords.latitude, position.coords.longitude);
 					const coords = {
 						lat: position.coords.latitude,
 						lng: position.coords.longitude,
@@ -33,8 +27,6 @@ const LocationManager = {
 					resolve(coords);
 				},
 				(error) => {
-					console.error("❌ Geolocation hatası:", error.code, error.message);
-
 					// İzin reddedildiğini kaydet
 					Storage.saveGeolocationPermission(false);
 
@@ -42,15 +34,12 @@ const LocationManager = {
 					switch (error.code) {
 						case error.PERMISSION_DENIED:
 							errorMessage = "Konum izni reddedildi";
-							console.log("🚫 Kullanıcı konum iznini reddetti");
 							break;
 						case error.POSITION_UNAVAILABLE:
 							errorMessage = "Konum bilgisi alınamadı";
-							console.log("⚠️ Konum bilgisi mevcut değil");
 							break;
 						case error.TIMEOUT:
 							errorMessage = "Konum alma zaman aşımına uğradı";
-							console.log("⏱️ Timeout: Konum alınamadı");
 							break;
 					}
 
@@ -58,7 +47,7 @@ const LocationManager = {
 				},
 				{
 					enableHighAccuracy: true,
-					timeout: 10000, // 10 saniye (5'ten artırıldı)
+					timeout: 10000,
 					maximumAge: 0,
 				}
 			);
@@ -76,9 +65,11 @@ const LocationManager = {
 			// En yakın şehri bul
 			const city = await API.findNearestCity(lat, lng);
 
-			// İlk ilçeyi al (şehir merkezi genelde ilk sıradadır)
+			// İlçeleri al
 			const districts = await API.getDistricts(city.SehirID);
-			const district = districts[0]; // İlk ilçe
+
+			// Akıllıca ilçe seç: MERKEZ veya şehir adıyla aynı ilçe
+			let district = this.findCentralDistrict(districts, city.SehirAdi);
 
 			const location = {
 				ulkeId: "2",
@@ -98,6 +89,31 @@ const LocationManager = {
 			console.error("Get location from coords error:", error);
 			throw error;
 		}
+	},
+
+	/**
+	 * Şehir merkezini akıllıca bul
+	 * @param {Array} districts - İlçe listesi
+	 * @param {string} cityName - Şehir adı
+	 * @returns {Object} Merkez ilçe
+	 */
+	findCentralDistrict(districts, cityName) {
+		// 1. Öncelik: "MERKEZ" içeren ilçe
+		let central = districts.find((d) => d.IlceAdi.includes("MERKEZ") || d.IlceAdi === "MERKEZ");
+
+		if (central) {
+			return central;
+		}
+
+		// 2. Öncelik: Şehir adıyla aynı ilçe (örn: KONYA/KONYA)
+		central = districts.find((d) => d.IlceAdi === cityName || d.IlceAdi === cityName + " MERKEZ");
+
+		if (central) {
+			return central;
+		}
+
+		// 3. Fallback: İlk ilçe (alfabetik)
+		return districts[0];
 	},
 
 	/**

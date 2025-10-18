@@ -95,8 +95,27 @@
 				</div>
 
 				<!-- Manual Location Selection Panel (Hidden by default) -->
-				<div id="manual-location" class="hidden mt-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-					<h3 class="text-white text-lg font-semibold mb-4">Konum Seçin</h3>
+				<div id="manual-location" class="hidden mt-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 relative">
+					<!-- Kapatma Butonu (Z-index yüksek) -->
+					<button id="close-panel-btn" class="absolute top-4 right-4 text-white/70 hover:text-white hover:bg-white/10 rounded-lg p-2 transition-colors z-10">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+						</svg>
+					</button>
+
+					<!-- Başlık ve Otomatik Konuma Dön -->
+					<div class="flex items-center gap-3 mb-4 pr-12">
+						<h3 class="text-white text-lg font-semibold">Konum Seçin</h3>
+
+						<!-- Otomatik Konuma Dön Butonu - Başlığın hemen yanında -->
+						<button id="reset-location-btn" class="hidden bg-primary/20 hover:bg-primary/30 text-primary text-sm px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+							</svg>
+							Otomatik Konum
+						</button>
+					</div>
+
 					<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 						<div>
 							<label class="block text-white/70 text-sm mb-2">Ülke</label>

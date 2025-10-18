@@ -177,10 +177,10 @@ const API = {
 			});
 
 			if (!tomorrowData) {
+				console.error("❌ Yarının iftar verisi bulunamadı");
 				throw new Error("Yarının iftar saati bulunamadı");
 			}
 
-			console.log("✅ Yarının iftar saati:", tomorrowData.Aksam, "Tarih:", tomorrowStr);
 			return {
 				time: tomorrowData.Aksam,
 				date: tomorrowStr, // YARIN TARİHİ

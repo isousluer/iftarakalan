@@ -64,7 +64,6 @@ const Countdown = {
 				// Özel tarih verilmişse (yarın için)
 				const [day, month, year] = targetDate.split(".").map(Number);
 				iftarDate = new Date(year, month - 1, day, hours, minutes, 0);
-				console.log("📅 Hedef tarih kullanılıyor:", targetDate, "→", iftarDate);
 			} else {
 				// Bugünün tarihi kullan
 				iftarDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
@@ -73,15 +72,8 @@ const Countdown = {
 			// Zaman farkını hesapla
 			let diff = iftarDate - now;
 
-			console.log("⏰ Hesaplama:", {
-				şimdi: now.toLocaleString("tr-TR"),
-				hedef: iftarDate.toLocaleString("tr-TR"),
-				fark: Math.floor(diff / 1000) + " saniye",
-			});
-
 			// Eğer iftar vakti geçtiyse VE targetDate verilmemişse
 			if (diff <= 0 && !targetDate) {
-				console.log("⚠️ İftar geçti, yarının verisi gerekli");
 				this.isIftarPassed = true;
 				return {
 					hours: 0,
@@ -95,7 +87,7 @@ const Countdown = {
 
 			// Eğer yarının tarihi kullanılıyorsa ama yine geçtiyse (saat ileri gitmiş)
 			if (diff <= 0 && targetDate) {
-				console.error("❌ Yarının iftar saati bile geçmiş! Sistem saati kontrol edilmeli.");
+				console.error("❌ Sistem saati hatası: Yarının iftarı bile geçmiş!");
 				return {
 					hours: 0,
 					minutes: 0,
