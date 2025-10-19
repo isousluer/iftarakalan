@@ -570,7 +570,10 @@ const App = {
 		// Enable notifications
 		if (enableBtn) {
 			enableBtn.addEventListener("click", async () => {
+				this.showLoading("Bildirimler aktif ediliyor...");
 				const success = await NotificationManager.requestPermission();
+				this.hideLoading();
+				
 				if (success) {
 					this.updateNotificationStatus();
 					if (enableBtn) enableBtn.classList.add("hidden");
