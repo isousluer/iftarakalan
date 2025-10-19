@@ -332,10 +332,10 @@
 
 ### Milestone 3: Polish & Deploy (2 Hafta Sonra)
 **Deliverables**:
-- [ ] Responsive design complete
-- [ ] Error handling complete
-- [ ] Testing complete
-- [ ] Deployed to production
+- [x] Responsive design complete
+- [x] Error handling complete
+- [x] Testing complete
+- [x] Deployed to production
 
 **Success Criteria**: Live ve kullanılabilir
 
