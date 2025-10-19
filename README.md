@@ -147,8 +147,6 @@ GET http://localhost:8081/api/proxy?url=https://ezanvakti.emushaf.net/vakitler/{
 - [x] 30 günlük veri çekimi
 - [x] Dropdown'ların dinamik doldurulması
 - [x] LocalStorage cache sistemi
-
-### Bekleyen Testler
 - [x] Geolocation izin verildi senaryosu
 - [x] Countdown doğruluğu (gerçek zamanlı)
 - [x] Offline senaryo
