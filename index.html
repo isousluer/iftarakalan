@@ -8,6 +8,9 @@
 
 		<!-- Favicon (Hilal İkonu) -->
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		
+		<!-- PWA Manifest -->
+		<link rel="manifest" href="/manifest.json" />
 
 		<!-- SEO & Social Media -->
 		<meta name="theme-color" content="#052e16" />
@@ -184,6 +187,64 @@
 					<div class="bg-primary/20 dark:bg-primary/20 text-white py-3 px-6 rounded-lg inline-block shadow-lg" role="status" aria-live="polite">
 						<p class="text-lg font-medium">İftar Saati: <span id="iftar-time" class="font-bold" aria-label="İftar saati">--:--</span></p>
 					</div>
+
+					<!-- Notification Settings Panel -->
+					<div id="notification-panel" class="hidden countdown-card rounded-xl p-6 max-w-md mx-auto">
+						<div class="flex items-center justify-between mb-4">
+							<h3 class="text-white text-lg font-semibold flex items-center gap-2">
+								<span>🔔</span>
+								Bildirimler
+							</h3>
+							<button id="close-notification-panel" class="text-white/70 hover:text-white transition-colors" aria-label="Bildirim panelini kapat">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+								</svg>
+							</button>
+						</div>
+
+						<!-- Notification Status -->
+						<div id="notification-status" class="mb-4 p-3 rounded-lg bg-white/5 text-sm text-white/70">
+							Bildirimler devre dışı
+						</div>
+
+						<!-- Enable Button -->
+						<button id="enable-notifications-btn" class="w-full bg-primary hover:bg-primary/80 text-white font-medium py-3 px-4 rounded-lg transition-colors mb-4">
+							Bildirimleri Aktif Et
+						</button>
+
+						<!-- Settings (Hidden until enabled) -->
+						<div id="notification-settings" class="hidden space-y-3">
+							<label class="flex items-center justify-between cursor-pointer">
+								<span class="text-white text-sm">İftara 1 saat kala</span>
+								<input type="checkbox" id="notify-1hour" checked class="w-5 h-5 text-primary rounded focus:ring-primary" />
+							</label>
+							<label class="flex items-center justify-between cursor-pointer">
+								<span class="text-white text-sm">İftara 30 dakika kala</span>
+								<input type="checkbox" id="notify-30min" checked class="w-5 h-5 text-primary rounded focus:ring-primary" />
+							</label>
+							<label class="flex items-center justify-between cursor-pointer">
+								<span class="text-white text-sm">İftara 10 dakika kala</span>
+								<input type="checkbox" id="notify-10min" checked class="w-5 h-5 text-primary rounded focus:ring-primary" />
+							</label>
+
+							<!-- Test & Disable Buttons -->
+							<div class="flex gap-2 mt-4">
+								<button id="test-notification-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white text-sm py-2 px-4 rounded-lg transition-colors">
+									Test Et
+								</button>
+								<button id="disable-notifications-btn" class="flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-200 text-sm py-2 px-4 rounded-lg transition-colors">
+									Devre Dışı Bırak
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- Notification Toggle Button (Floating) -->
+					<button id="notification-toggle-btn" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/80 text-white p-4 rounded-full shadow-lg transition-all hover:scale-110" aria-label="Bildirim ayarları">
+						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+						</svg>
+					</button>
 				</div>
 			</main>
 
@@ -198,6 +259,7 @@
 		<script src="js/api.js"></script>
 		<script src="js/location.js"></script>
 		<script src="js/countdown.js"></script>
+		<script src="js/notifications.js"></script>
 		<script src="js/app.js"></script>
 	</body>
 </html>

@@ -1,0 +1,20 @@
+{
+	"name": "İftara Kalan",
+	"short_name": "İftara Kalan",
+	"description": "Ramazan ayında iftara kalan süreyi anlık olarak takip edin",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#052e16",
+	"theme_color": "#052e16",
+	"orientation": "portrait",
+	"icons": [
+		{
+			"src": "/favicon.svg",
+			"sizes": "any",
+			"type": "image/svg+xml",
+			"purpose": "any maskable"
+		}
+	],
+	"categories": ["lifestyle", "utilities"],
+	"lang": "tr"
+}

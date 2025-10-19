@@ -9,6 +9,25 @@
   from = "/api/proxy"
   to = "/.netlify/functions/proxy"
   status = 200
+
+[[redirects]]
+  from = "/api/vapid-public-key"
+  to = "/.netlify/functions/vapid-public-key"
+  status = 200
+
+[[redirects]]
+  from = "/api/save-subscription"
+  to = "/.netlify/functions/save-subscription"
+  status = 200
+
+[[redirects]]
+  from = "/api/remove-subscription"
+  to = "/.netlify/functions/remove-subscription"
+  status = 200
+
+# Scheduled function - Her dakika çalışır
+[functions.scheduler]
+  schedule = "* * * * *"
   force = true
 
 [[headers]]

@@ -1,0 +1,16 @@
+{
+	"name": "iftarakalan",
+	"version": "2.0.0",
+	"description": "İftara kalan süreyi gösteren web uygulaması - Push Notifications",
+	"scripts": {
+		"dev": "python3 proxy_server.py",
+		"generate-vapid": "node scripts/generate-vapid.js"
+	},
+	"dependencies": {
+		"web-push": "^3.6.7"
+	},
+	"devDependencies": {},
+	"keywords": ["iftar", "ramazan", "namaz", "vakitler", "pwa", "push-notifications"],
+	"author": "İftarakalan.com",
+	"license": "MIT"
+}

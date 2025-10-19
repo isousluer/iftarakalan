@@ -10,10 +10,12 @@ Ramazan ayında kullanıcılara iftara kalan süreyi anlık olarak gösteren, ko
 - ⏰ **Gerçek Zamanlı Geri Sayım**: İftara kalan saat, dakika ve saniye
 - 📍 **Otomatik Konum Tespiti**: Tarayıcı geolocation API ile otomatik konum
 - 🗺️ **Manuel Konum Seçimi**: Ülke > Şehir > İlçe dropdown seçimi
+- 🔔 **Push Notifications**: Tarayıcı kapalı olsa bile bildirim (1 saat, 30 dk, 10 dk)
 - 🎨 **Modern Tasarım**: Glassmorphism efektli dark theme
 - 📱 **Responsive**: Tüm cihazlarda mükemmel çalışır
 - ⚡ **Hızlı**: Minimal bağımlılık, hızlı yükleme
 - 💾 **Akıllı Cache**: 30 günlük veri cache'lenir
+- 🌐 **PWA**: Progressive Web App desteği
 
 ## 🛠️ Teknolojiler
 
@@ -22,34 +24,46 @@ Ramazan ayında kullanıcılara iftara kalan süreyi anlık olarak gösteren, ko
 - **Font**: Plus Jakarta Sans (Google Fonts)
 - **API**: ezanvakti.emushaf.net (Python proxy ile)
 - **CORS Proxy**: Python HTTP server (development + production)
+- **PWA**: Service Worker + Web Push API
+- **Backend**: Netlify Serverless Functions + Scheduled Functions
+- **Push**: web-push library (VAPID)
 
 ## 📁 Proje Yapısı
 
 ```
 iftarakalan/
 ├── index.html              # Ana HTML dosyası
-├── proxy_server.py         # CORS proxy server (GEREKLI!)
+├── manifest.json           # PWA manifest
+├── sw.js                   # Service Worker (push notifications)
+├── proxy_server.py         # CORS proxy server (development)
+├── package.json            # Dependencies (web-push)
 ├── js/
 │   ├── api.js             # API entegrasyonu (proxy kullanıyor)
 │   ├── location.js        # Konum yönetimi
 │   ├── countdown.js       # Geri sayım mantığı
 │   ├── storage.js         # LocalStorage yönetimi
+│   ├── notifications.js   # Push notification manager
 │   └── app.js             # Ana uygulama
+├── netlify/
+│   └── functions/
+│       ├── proxy.js              # CORS proxy (production)
+│       ├── vapid-public-key.js   # VAPID key endpoint
+│       ├── save-subscription.js  # Subscription kaydetme
+│       ├── remove-subscription.js # Subscription silme
+│       └── scheduler.js          # Cron job (bildirim gönderme)
+├── scripts/
+│   └── generate-vapid.js  # VAPID key generator
 ├── memory-bank/           # Proje dokümantasyonu
-│   ├── projectbrief.md
-│   ├── productContext.md
-│   ├── systemPatterns.md
-│   ├── techContext.md
-│   ├── activeContext.md
-│   └── progress.md
+├── PUSH_NOTIFICATIONS.md  # Push notifications kılavuzu
 └── README.md
 ```
 
 ## 🚀 Kurulum ve Çalıştırma
 
 ### Gereksinimler
-- Python 3.x (proxy server için)
-- Modern web browser
+- Python 3.x (proxy server için - development)
+- Node.js 18+ (push notifications için)
+- Modern web browser (Service Worker desteği)
 
 ### Development Ortamı
 
@@ -59,7 +73,12 @@ git clone <repo-url>
 cd iftarakalan
 ```
 
-2. **CORS Proxy Server'ı başlatın (ZORUNLU):**
+2. **Dependencies yükleyin:**
+```bash
+npm install
+```
+
+3. **CORS Proxy Server'ı başlatın (ZORUNLU):**
 ```bash
 python3 proxy_server.py
 ```
@@ -70,7 +89,7 @@ Server şu mesajı gösterecek:
 📡 Proxy endpoint: http://localhost:8081/api/proxy?url=TARGET_URL
 ```
 
-3. **Tarayıcıda açın:**
+4. **Tarayıcıda açın:**
 ```
 http://localhost:8081
 ```
@@ -96,6 +115,21 @@ Browser → Proxy (CORS headers ekler) → emushaf API → Proxy → Browser
 1. Konum izni reddedilirse veya "Konum Değiştir" butonuna tıklayın
 2. Ülke, Şehir ve İlçe seçin
 3. Geri sayım başlar
+
+### 🔔 Push Notifications Kurulumu
+
+**Detaylı kılavuz:** [`PUSH_NOTIFICATIONS.md`](PUSH_NOTIFICATIONS.md)
+
+```bash
+# 1. VAPID keys oluştur
+npm run generate-vapid
+
+# 2. Keys'leri Netlify Environment Variables'a ekle
+# VAPID_PUBLIC_KEY ve VAPID_PRIVATE_KEY
+
+# 3. Deploy
+git push origin main
+```
 
 ### 🍎 Safari Kullanıcıları İçin
 Safari'de `localhost:8081` üzerinde geolocation çalışmaz (HTTPS gereksinimi). İki seçenek:
@@ -278,12 +312,13 @@ Made with ❤️ for Ramadan
 ## 🔮 Gelecek Özellikler
 
 - [ ] Diğer namaz vakitleri
-- [ ] Bildirim sistemi
+- [x] ~~Bildirim sistemi~~ ✅ Tamamlandı (v2.0)
 - [ ] Widget desteği
 - [ ] Çoklu dil desteği
 - [ ] Dark/Light theme toggle
 - [ ] Mobil uygulama (Capacitor)
 - [ ] Favori konumlar
+- [ ] Database entegrasyonu (subscriptions için)
 
 ## 📞 İletişim
 

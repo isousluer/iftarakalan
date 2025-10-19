@@ -42,6 +42,10 @@ const App = {
 		// Event listener'ları ekle
 		this.attachEventListeners();
 
+		// Notification sistemini başlat
+		await NotificationManager.init();
+		this.initNotificationUI();
+
 		// Kaydedilmiş konumları yükle
 		const savedLocation = Storage.getLocation();
 		const savedAutoLocation = Storage.getAutoLocation();
@@ -530,6 +534,130 @@ const App = {
 		this.state.error = null;
 		if (this.elements.errorMessage) {
 			this.elements.errorMessage.classList.add("hidden");
+		}
+	},
+
+	/**
+	 * Notification UI'ını başlat
+	 */
+	initNotificationUI() {
+		const toggleBtn = document.getElementById("notification-toggle-btn");
+		const panel = document.getElementById("notification-panel");
+		const closeBtn = document.getElementById("close-notification-panel");
+		const enableBtn = document.getElementById("enable-notifications-btn");
+		const disableBtn = document.getElementById("disable-notifications-btn");
+		const testBtn = document.getElementById("test-notification-btn");
+		const statusDiv = document.getElementById("notification-status");
+		const settingsDiv = document.getElementById("notification-settings");
+
+		// Toggle panel
+		if (toggleBtn) {
+			toggleBtn.addEventListener("click", () => {
+				if (panel) {
+					panel.classList.toggle("hidden");
+					this.updateNotificationStatus();
+				}
+			});
+		}
+
+		// Close panel
+		if (closeBtn) {
+			closeBtn.addEventListener("click", () => {
+				if (panel) panel.classList.add("hidden");
+			});
+		}
+
+		// Enable notifications
+		if (enableBtn) {
+			enableBtn.addEventListener("click", async () => {
+				const success = await NotificationManager.requestPermission();
+				if (success) {
+					this.updateNotificationStatus();
+					if (enableBtn) enableBtn.classList.add("hidden");
+					if (settingsDiv) settingsDiv.classList.remove("hidden");
+				} else {
+					this.showError("Bildirim izni verilmedi. Tarayıcı ayarlarından izin verebilirsiniz.");
+				}
+			});
+		}
+
+		// Disable notifications
+		if (disableBtn) {
+			disableBtn.addEventListener("click", async () => {
+				await NotificationManager.disable();
+				this.updateNotificationStatus();
+				if (enableBtn) enableBtn.classList.remove("hidden");
+				if (settingsDiv) settingsDiv.classList.add("hidden");
+			});
+		}
+
+		// Test notification
+		if (testBtn) {
+			testBtn.addEventListener("click", async () => {
+				await NotificationManager.sendTestNotification();
+			});
+		}
+
+		// Checkbox listeners
+		const notify1hour = document.getElementById("notify-1hour");
+		const notify30min = document.getElementById("notify-30min");
+		const notify10min = document.getElementById("notify-10min");
+
+		// Kaydedilmiş ayarları checkbox'lara yükle
+		if (notify1hour) {
+			notify1hour.checked = NotificationManager.settings.oneHour;
+			notify1hour.addEventListener("change", (e) => {
+				NotificationManager.updateSettings({ oneHour: e.target.checked });
+			});
+		}
+
+		if (notify30min) {
+			notify30min.checked = NotificationManager.settings.thirtyMinutes;
+			notify30min.addEventListener("change", (e) => {
+				NotificationManager.updateSettings({ thirtyMinutes: e.target.checked });
+			});
+		}
+
+		if (notify10min) {
+			notify10min.checked = NotificationManager.settings.tenMinutes;
+			notify10min.addEventListener("change", (e) => {
+				NotificationManager.updateSettings({ tenMinutes: e.target.checked });
+			});
+		}
+
+		// İlk durum güncellemesi
+		this.updateNotificationStatus();
+	},
+
+	/**
+	 * Notification durumunu güncelle
+	 */
+	updateNotificationStatus() {
+		const statusDiv = document.getElementById("notification-status");
+		const enableBtn = document.getElementById("enable-notifications-btn");
+		const settingsDiv = document.getElementById("notification-settings");
+		const permission = NotificationManager.getPermissionStatus();
+
+		if (!statusDiv) return;
+
+		if (permission === "granted") {
+			statusDiv.textContent = "✅ Bildirimler aktif";
+			statusDiv.className = "mb-4 p-3 rounded-lg bg-green-500/20 text-sm text-green-200";
+			if (enableBtn) enableBtn.classList.add("hidden");
+			if (settingsDiv) settingsDiv.classList.remove("hidden");
+		} else if (permission === "denied") {
+			statusDiv.textContent = "❌ Bildirim izni reddedildi. Tarayıcı ayarlarından izin verebilirsiniz.";
+			statusDiv.className = "mb-4 p-3 rounded-lg bg-red-500/20 text-sm text-red-200";
+			if (enableBtn) enableBtn.classList.add("hidden");
+		} else if (permission === "unsupported") {
+			statusDiv.textContent = "⚠️ Tarayıcınız bildirimleri desteklemiyor";
+			statusDiv.className = "mb-4 p-3 rounded-lg bg-yellow-500/20 text-sm text-yellow-200";
+			if (enableBtn) enableBtn.classList.add("hidden");
+		} else {
+			statusDiv.textContent = "Bildirimler devre dışı";
+			statusDiv.className = "mb-4 p-3 rounded-lg bg-white/5 text-sm text-white/70";
+			if (enableBtn) enableBtn.classList.remove("hidden");
+			if (settingsDiv) settingsDiv.classList.add("hidden");
 		}
 	},
 };
