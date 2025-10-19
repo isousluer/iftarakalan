@@ -122,20 +122,29 @@ const NotificationManager = {
 	 */
 	async getVapidPublicKey() {
 		try {
-			const response = await fetch("/api/vapid-public-key");
-			const data = await response.json();
-			return data.publicKey;
+			const response = await fetch("/api/vapid-public-key", { timeout: 2000 });
+			if (response.ok) {
+				const data = await response.json();
+				return data.publicKey;
+			}
 		} catch (error) {
-			console.error("❌ VAPID key alınamadı:", error);
-			// Fallback: Geçici test key (production'da backend'den alınmalı)
-			return "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U";
+			console.warn("⚠️ VAPID key backend'den alınamadı (local development?)");
 		}
+		// Fallback: Test key (local development için)
+		console.log("ℹ️ Test VAPID key kullanılıyor");
+		return "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U";
 	},
 
 	/**
 	 * Subscription'ı backend'e kaydet
 	 */
 	async saveSubscriptionToBackend(subscription) {
+		// Local development kontrolü
+		if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+			console.log("ℹ️ Local development - subscription backend'e kaydedilmedi");
+			return;
+		}
+
 		try {
 			// Kullanıcı konum bilgisi
 			const location = Storage.getLocation();

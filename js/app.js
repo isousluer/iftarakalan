@@ -640,7 +640,13 @@ const App = {
 
 		if (!statusDiv) return;
 
-		if (permission === "granted") {
+		// Kullanıcı manuel olarak devre dışı bıraktıysa
+		if (permission === "granted" && !NotificationManager.settings.enabled) {
+			statusDiv.textContent = "⏸️ Bildirimler devre dışı bırakıldı";
+			statusDiv.className = "mb-4 p-3 rounded-lg bg-white/5 text-sm text-white/70";
+			if (enableBtn) enableBtn.classList.remove("hidden");
+			if (settingsDiv) settingsDiv.classList.add("hidden");
+		} else if (permission === "granted") {
 			statusDiv.textContent = "✅ Bildirimler aktif";
 			statusDiv.className = "mb-4 p-3 rounded-lg bg-green-500/20 text-sm text-green-200";
 			if (enableBtn) enableBtn.classList.add("hidden");
