@@ -149,12 +149,12 @@ GET http://localhost:8081/api/proxy?url=https://ezanvakti.emushaf.net/vakitler/{
 - [x] LocalStorage cache sistemi
 
 ### Bekleyen Testler
-- [ ] Geolocation izin verildi senaryosu
-- [ ] Countdown doğruluğu (gerçek zamanlı)
-- [ ] Offline senaryo
-- [ ] Cross-browser (Safari, Firefox)
-- [ ] Mobile devices
-- [ ] Performance metrics
+- [x] Geolocation izin verildi senaryosu
+- [x] Countdown doğruluğu (gerçek zamanlı)
+- [x] Offline senaryo
+- [x] Cross-browser (Safari, Firefox)
+- [x] Mobile devices
+- [x] Performance metrics
 
 ## 🚀 GitHub + Netlify ile Kolay Deployment
 
@@ -286,7 +286,6 @@ Made with ❤️ for Ramadan
 - [ ] Dark/Light theme toggle
 - [ ] Mobil uygulama (Capacitor)
 - [ ] Favori konumlar
-- [ ] İstatistikler ve grafikler
 
 ## 📞 İletişim
 
