@@ -4,7 +4,8 @@
 
 const API = {
 	BASE_URL: "https://ezanvakti.emushaf.net",
-	PROXY_URL: "http://localhost:8081/api/proxy",
+	// Production'da Netlify function, development'ta local proxy
+	PROXY_URL: window.location.hostname === "localhost" ? "http://localhost:8081/api/proxy" : "/api/proxy",
 	USE_PROXY: true, // CORS sorunu için proxy kullan
 
 	/**

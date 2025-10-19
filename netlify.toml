@@ -1,0 +1,19 @@
+[build]
+  publish = "."
+  command = "echo 'No build needed - static site'"
+
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  from = "/api/proxy"
+  to = "/.netlify/functions/proxy"
+  status = 200
+  force = true
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

@@ -1,4 +1,7 @@
-# İftar Geri Sayım Uygulaması
+# İftar Geri Sayım Uygulaması 🌙
+
+[![Status](https://img.shields.io/badge/status-production%20ready-success)](https://github.com)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 Ramazan ayında kullanıcılara iftara kalan süreyi anlık olarak gösteren, konum bazlı web uygulaması.
 
@@ -146,11 +149,39 @@ GET http://localhost:8081/api/proxy?url=https://ezanvakti.emushaf.net/vakitler/{
 - [ ] Mobile devices
 - [ ] Performance metrics
 
-## 📦 Production Deployment
+## 🚀 GitHub + Netlify ile Kolay Deployment
+
+### Hızlı Başlangıç (3 Adım!)
+
+```bash
+# 1. GitHub'a push et
+git add .
+git commit -m "Initial commit"
+git push origin main
+
+# 2. Netlify'a bağlan
+# https://netlify.com → "Import from GitHub" → Repo seç → Deploy!
+
+# 3. Domain bağla (opsiyonel)
+# Netlify Dashboard → Domain settings → Custom domain ekle
+```
+
+### 📖 Detaylı Deployment Kılavuzu
+👉 **[DEPLOYMENT.md](DEPLOYMENT.md)** - Adım adım tüm süreç!
+
+### ✨ Netlify Özellikleri (Ücretsiz!)
+- ✅ Otomatik SSL/HTTPS
+- ✅ Serverless functions (proxy dahil!)
+- ✅ CDN (dünya çapında hızlı yükleme)
+- ✅ Custom domain desteği
+- ✅ Continuous deployment (git push = auto deploy)
+- ✅ Deploy previews (PR'lar için)
+
+## 📦 Alternatif Deployment Seçenekleri
 
 ### ⚠️ ÖNEMLİ: CORS Proxy Gereksinimi
 
-Production'da proxy server gereklidir. İki seçenek:
+Production'da proxy server gereklidir. Seçenekler:
 
 ### Seçenek 1: Netlify Functions (ÖNERİLEN)
 
