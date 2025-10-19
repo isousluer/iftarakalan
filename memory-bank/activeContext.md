@@ -73,6 +73,55 @@
 
 ## Son Değişiklikler
 
+### 2025-10-19 07:38 - İSLAMİ SEMBOL (HİLAL) EKLENDİ! 🌙
+
+**Kullanıcı Talebi**: Yıldız ikonu → Hilal emoji, "İftar Geri Sayım" → "İftara Kalan"
+
+**Neden Hilal**:
+- İslam'ın en önemli sembollerinden biri
+- Ramazan ayını simgeler
+- Kültürel ve dini bağlam
+- Universal (tüm cihazlarda emoji desteği)
+
+**İmplementasyon**:
+
+1. **Header İkonu** ([`index.html`](../index.html:84-86)):
+   ```html
+   <!-- Öncesi: SVG yıldız ikonu -->
+   <!-- Sonrası: Hilal emoji -->
+   <span class="text-4xl" aria-hidden="true">🌙</span>
+   <h1 class="text-white text-xl font-bold">İftara Kalan</h1>
+   ```
+
+2. **Favicon** ([`favicon.svg`](../favicon.svg:1)):
+   ```svg
+   <!-- Dark green background + hilal emoji -->
+   <rect width="100" height="100" fill="#052e16" rx="15"/>
+   <text x="50" y="72" font-size="65" text-anchor="middle" fill="#34d399">🌙</text>
+   ```
+
+3. **Başlık Değişiklikleri** ([`index.html`](../index.html:6-19)):
+   - Page title: "İftara Kalan - Iftarakalan.com"
+   - OG title: "İftara Kalan 🌙"
+   - Twitter title: "İftara Kalan 🌙"
+
+4. **Favicon Açıklaması** ([`index.html`](../index.html:10)):
+   ```html
+   <!-- Favicon (Hilal İkonu) -->
+   ```
+
+**Görsel Sonuç**:
+- ✅ Header: 🌙 İftara Kalan
+- ✅ Favicon: Dark green + 🌙
+- ✅ Ana Başlık: "İftara Kalan Süre" (değişmedi)
+- ✅ İslami atmosfer
+
+**Test Edildi**:
+- ✅ Browser'da görünüm kontrolü
+- ✅ Favicon yükleniyor (200 OK)
+- ✅ Emoji tüm cihazlarda destekleniyor
+- ✅ Responsive - mobile/tablet/desktop
+
 ### 2025-10-19 06:57 - SAFARI UYUMLULUK DÜZELTMESİ! 🍎
 
 **Problem**: Safari'de geolocation isteği gelmiyor (`localhost:8081`)
