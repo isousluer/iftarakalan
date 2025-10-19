@@ -97,6 +97,13 @@ Browser → Proxy (CORS headers ekler) → emushaf API → Proxy → Browser
 2. Ülke, Şehir ve İlçe seçin
 3. Geri sayım başlar
 
+### 🍎 Safari Kullanıcıları İçin
+Safari'de `localhost:8081` üzerinde geolocation çalışmaz (HTTPS gereksinimi). İki seçenek:
+1. **Manuel Konum Seç** (önerilen - development için)
+2. **HTTPS'te Test Et** (production'da çalışır - `https://iftarakalan.com`)
+
+Detaylı bilgi: [`DEPLOYMENT.md - Safari Özel Notlar`](DEPLOYMENT.md#-safari-özel-notlar)
+
 ## 🔌 API Entegrasyonu
 
 Uygulama [ezanvakti.emushaf.net](https://ezanvakti.emushaf.net) API'sini **CORS proxy üzerinden** kullanır:

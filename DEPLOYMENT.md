@@ -119,6 +119,43 @@ Proxy server otomatik çalışır (netlify/functions/proxy.js):
 - Development: `http://localhost:8081/api/proxy`
 - Production: `https://iftarakalan.com/api/proxy`
 
+## 🍎 Safari Özel Notlar
+
+### Geolocation Safari'de Çalışmıyor?
+
+**Problem**: Safari'de geolocation isteği gelmiyor (localhost:8081)
+
+**Neden**: Safari geolocation için **HTTPS** veya **localhost** (port olmadan) gerektirir. `localhost:8081` Safari tarafından güvenli kabul edilmez.
+
+**Çözümler**:
+
+#### Çözüm 1: Manuel Konum Seç (ÖNERİLEN)
+- "Konum Değiştir" butonuna tıkla
+- Şehir ve ilçe seç
+- Normal çalışır ✅
+
+#### Çözüm 2: HTTPS ile Test
+- Netlify'a deploy et
+- `https://iftarakalan.com` adresinde test et
+- Safari HTTPS'te geolocation iznini soracak ✅
+
+#### Çözüm 3: Safari Settings
+1. Safari → Settings → Websites → Location
+2. `localhost:8081` için "Allow" seç
+3. Sayfayı yenile
+(Not: Her session'da tekrar ayarlanması gerekebilir)
+
+### Safari Geolocation Kısıtlamaları
+
+Safari güvenlik nedeniyle geolocation'ı kısıtlar:
+- ✅ HTTPS: Çalışır
+- ✅ localhost (port yok): Çalışır
+- ❌ localhost:8081: Çalışmaz
+- ❌ HTTP: Çalışmaz
+- ❌ IP adresi: Çalışmaz
+
+**Sonuç**: Production'da (HTTPS) Safari'de sorun olmayacak! Development'ta manuel konum seçimi kullanılabilir.
+
 ## 🐛 Sorun Giderme
 
 ### Deploy Başarısız

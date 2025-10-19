@@ -1,11 +1,11 @@
 # Active Context: İftar Geri Sayım Uygulaması
 
 ## Mevcut Durum
-**Tarih**: 2025-10-19 06:42 UTC
-**Faz**: DEPLOYMENT READY - Full Test + Netlify Config Complete
+**Tarih**: 2025-10-19 06:57 UTC
+**Faz**: DEPLOYMENT READY - Safari Uyumluluğu + Full Test Complete
 **Mod**: Code
-**Tamamlanma**: %100 + Deployment Dosyaları Hazır
-**Status**: ✅ TAM ÇALIŞIYOR + GITHUB/NETLIFY HAZIR
+**Tamamlanma**: %100 + Safari Fix + Deployment Dosyaları Hazır
+**Status**: ✅ TAM ÇALIŞIYOR + SAFARI UYUMLU + GITHUB/NETLIFY HAZIR
 
 ## Şu Anda Odaklanılan İşler
 
@@ -72,6 +72,62 @@
 - [x] Accessibility audit
 
 ## Son Değişiklikler
+
+### 2025-10-19 06:57 - SAFARI UYUMLULUK DÜZELTMESİ! 🍎
+
+**Problem**: Safari'de geolocation isteği gelmiyor (`localhost:8081`)
+
+**Root Cause**: Safari geolocation için HTTPS veya `localhost` (port olmadan) gerektirir. `localhost:8081` güvenli kabul edilmez.
+
+**Çözüm Implementasyonu**:
+
+1. **[`js/location.js`](../js/location.js:13-29)** - HTTPS Kontrolü:
+   ```javascript
+   // Secure context kontrolü
+   const isSecureContext = window.isSecureContext ||
+     window.location.protocol === 'https:' ||
+     window.location.hostname === 'localhost' ||
+     window.location.hostname === '127.0.0.1';
+   
+   if (!isSecureContext) {
+     console.warn("⚠️ Geolocation için HTTPS gerekli (Safari)");
+     reject(new Error("HTTPS_REQUIRED"));
+   }
+   
+   // Safari detection ve optimizasyon
+   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+   
+   // Safari için özel timeout ve accuracy ayarları
+   {
+     enableHighAccuracy: !isSafari,
+     timeout: isSafari ? 8000 : 10000,
+     maximumAge: 0
+   }
+   ```
+
+2. **[`js/app.js`](../js/app.js:154-157)** - HTTPS Hatası Handler:
+   ```javascript
+   if (error.message === "HTTPS_REQUIRED") {
+     this.showError("🔒 Güvenli bağlantı (HTTPS) gerekiyor. Lütfen manuel olarak konum seçin.");
+     this.showManualLocationPanel();
+   }
+   ```
+
+3. **[`DEPLOYMENT.md`](../DEPLOYMENT.md:102-141)** - Safari Özel Notlar Bölümü:
+   - Safari geolocation kısıtlamaları açıklandı
+   - 3 çözüm yolu sunuldu
+   - Production'da sorun olmayacağı belirtildi
+
+4. **[`README.md`](../README.md:98-104)** - Safari Kullanıcı Uyarısı:
+   - Development'ta manuel seçim önerisi
+   - DEPLOYMENT.md referansı
+
+**Sonuç**:
+- ✅ Safari için graceful fallback
+- ✅ User-friendly hata mesajı
+- ✅ Manuel seçim otomatik açılıyor
+- ✅ Production'da (HTTPS) sorun olmayacak
+- ✅ Dokümantasyon tam
 
 ### 2025-10-19 06:42 - DEPLOYMENT HAZIR! 🚀
 

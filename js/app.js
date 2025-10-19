@@ -154,6 +154,10 @@ const App = {
 			if (error.message === "PERMISSION_DENIED") {
 				// İzin reddedildiyse manuel seçimi göster
 				this.showManualLocationPanel();
+			} else if (error.message === "HTTPS_REQUIRED") {
+				// Safari HTTPS gereksinimi
+				this.showError("🔒 Güvenli bağlantı (HTTPS) gerekiyor. Lütfen manuel olarak konum seçin.");
+				this.showManualLocationPanel();
 			} else {
 				// Diğer hatalar için hata mesajı göster
 				this.showError("Konum tespit edilemedi. Lütfen manuel olarak seçin.");

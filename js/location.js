@@ -9,10 +9,23 @@ const LocationManager = {
 	 */
 	async getGeolocation() {
 		return new Promise((resolve, reject) => {
+			// Geolocation desteği kontrolü
 			if (!navigator.geolocation) {
 				reject(new Error("Geolocation desteklenmiyor"));
 				return;
 			}
+
+			// HTTPS kontrolü (Safari için kritik)
+			const isSecureContext = window.isSecureContext || window.location.protocol === "https:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+
+			if (!isSecureContext) {
+				console.warn("⚠️ Geolocation için HTTPS gerekli (Safari)");
+				reject(new Error("HTTPS_REQUIRED"));
+				return;
+			}
+
+			// Safari user agent detection
+			const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 			navigator.geolocation.getCurrentPosition(
 				(position) => {
@@ -46,8 +59,8 @@ const LocationManager = {
 					reject(new Error(errorMessage));
 				},
 				{
-					enableHighAccuracy: true,
-					timeout: 10000,
+					enableHighAccuracy: !isSafari, // Safari'de false olabilir
+					timeout: isSafari ? 8000 : 10000, // Safari için daha kısa timeout
 					maximumAge: 0,
 				}
 			);
