@@ -25,10 +25,10 @@
   to = "/.netlify/functions/remove-subscription"
   status = 200
 
-# Scheduled function - Her dakika çalışır
-[functions.scheduler]
-  schedule = "* * * * *"
-  force = true
+[[redirects]]
+  from = "/api/send-notifications"
+  to = "/.netlify/functions/send-notifications"
+  status = 200
 
 [[headers]]
   for = "/*"
