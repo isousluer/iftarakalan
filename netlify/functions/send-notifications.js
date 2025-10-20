@@ -177,24 +177,24 @@ async function checkAndSendNotification(subData) {
 			return true;
 		}
 
-		// Bildirim kontrolü
+		// Bildirim kontrolü (tolerans: ±1 dakika)
 		let notification = null;
 
-		if (settings.oneHour && diffMinutes === 60) {
+		if (settings.oneHour && diffMinutes >= 59 && diffMinutes <= 61) {
 			notification = {
 				title: "İftara 1 Saat Kaldı! 🌙",
 				body: `İftar saati: ${iftarTime}`,
 				icon: "/favicon.svg",
 				badge: "/favicon.svg",
 			};
-		} else if (settings.thirtyMinutes && diffMinutes === 30) {
+		} else if (settings.thirtyMinutes && diffMinutes >= 29 && diffMinutes <= 31) {
 			notification = {
 				title: "İftara 30 Dakika Kaldı! 🌙",
 				body: `İftar saati: ${iftarTime}`,
 				icon: "/favicon.svg",
 				badge: "/favicon.svg",
 			};
-		} else if (settings.tenMinutes && diffMinutes === 10) {
+		} else if (settings.tenMinutes && diffMinutes >= 9 && diffMinutes <= 11) {
 			notification = {
 				title: "İftara 10 Dakika Kaldı! 🌙",
 				body: `İftar saati: ${iftarTime}. Hazırlıklara başlayın!`,
