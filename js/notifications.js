@@ -257,29 +257,20 @@ const NotificationManager = {
 	},
 
 	/**
-	 * Bildirimleri devre dışı bırak
+	 * Bildirimleri devre dışı bırak (soft disable)
 	 */
 	async disable() {
 		try {
-			const subscription = await this.swRegistration?.pushManager.getSubscription();
-			if (subscription) {
-				await subscription.unsubscribe();
-				console.log("✅ Subscription iptal edildi");
-			}
-
+			// Subscription'ı silme, sadece ayarları güncelle
 			this.settings.enabled = false;
 			this.saveSettings();
 
-			// Backend'e bildir
-			await fetch("/api/remove-subscription", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					endpoint: subscription?.endpoint,
-				}),
-			});
+			// Backend'e güncellemeyi gönder
+			const subscription = await this.swRegistration?.pushManager.getSubscription();
+			if (subscription) {
+				await this.saveSubscriptionToBackend(subscription);
+				console.log("✅ Bildirimler devre dışı bırakıldı");
+			}
 		} catch (error) {
 			console.error("❌ Disable hatası:", error);
 		}
