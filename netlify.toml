@@ -35,11 +35,6 @@
   to = "/.netlify/functions/send-notifications"
   status = 200
 
-[[redirects]]
-  from = "/api/test-simple"
-  to = "/.netlify/functions/test-simple"
-  status = 200
-
 [[headers]]
   for = "/*"
   [headers.values]
