@@ -23,15 +23,15 @@ exports.handler = async (event) => {
 		}
 
 		// Netlify Blob storage
-		const { getStore } = await import("@netlify/blobs");
-		const store = getStore("subscriptions");
-
-		// Mevcut subscriptions'ı oku
 		let subscriptions = [];
+		
 		try {
+			const { getStore } = await import("@netlify/blobs");
+			const store = getStore("subscriptions");
 			const data = await store.get("list", { type: "json" });
 			subscriptions = data || [];
-		} catch (error) {
+		} catch (blobError) {
+			console.warn("⚠️ Blobs not available:", blobError.message);
 			subscriptions = [];
 		}
 
@@ -53,7 +53,15 @@ exports.handler = async (event) => {
 		}
 
 		// Blob'a kaydet
-		await store.set("list", JSON.stringify(subscriptions));
+		try {
+			const { getStore } = await import("@netlify/blobs");
+			const store = getStore("subscriptions");
+			await store.set("list", JSON.stringify(subscriptions));
+			console.log("✅ Saved to Blobs");
+		} catch (blobError) {
+			console.error("❌ Blobs save error:", blobError.message);
+			// Devam et (en azından log'da görünür)
+		}
 
 		console.log(`✅ Subscription saved: ${subscription.endpoint.substring(0, 50)}...`);
 
