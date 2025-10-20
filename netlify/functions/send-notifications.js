@@ -19,8 +19,23 @@ exports.handler = async (event) => {
 	console.log("⏰ Time:", new Date().toISOString());
 	console.log("=".repeat(50));
 
-	// Token kontrolü devre dışı (test için)
-	console.log("ℹ️ Auth disabled for testing");
+	// Token kontrolü
+	const authToken = event.headers["x-auth-token"] || event.headers["X-Auth-Token"];
+	const expectedToken = process.env.CRON_SECRET_TOKEN;
+
+	if (expectedToken && expectedToken.length > 0) {
+		if (authToken !== expectedToken) {
+			console.warn("⚠️ Unauthorized: Token mismatch");
+			return {
+				statusCode: 401,
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ error: "Unauthorized" }),
+			};
+		}
+		console.log("✅ Auth OK");
+	} else {
+		console.log("ℹ️ Auth disabled (no token configured)");
+	}
 
 	// VAPID keys kontrolü
 	if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
