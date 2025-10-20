@@ -23,10 +23,11 @@ exports.handler = async (event) => {
 	console.log("⏰ Notification sender çalıştı:", new Date().toISOString());
 
 	// Basit güvenlik: Secret token kontrolü (opsiyonel)
-	const authToken = event.headers["x-auth-token"];
-	const expectedToken = process.env.CRON_SECRET_TOKEN || "your-secret-token-here";
+	const authToken = event.headers["x-auth-token"] || event.headers["X-Auth-Token"];
+	const expectedToken = process.env.CRON_SECRET_TOKEN;
 
-	if (authToken !== expectedToken) {
+	// Token kontrolü (sadece production'da)
+	if (expectedToken && authToken !== expectedToken) {
 		console.warn("⚠️ Unauthorized request");
 		return {
 			statusCode: 401,
@@ -56,7 +57,9 @@ exports.handler = async (event) => {
 			};
 		}
 
-		// Her subscription için kontrol et
+		console.log(`📊 ${subscriptions.length} subscription bulundu`);
+
+		// Her subscription için kontrol et (timeout: 8 saniye)
 		const results = await Promise.allSettled(
 			subscriptions.map(async (subData) => {
 				try {

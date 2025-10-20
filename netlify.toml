@@ -4,6 +4,11 @@
 
 [functions]
   directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Function timeout (10 saniye)
+[functions.send-notifications]
+  timeout = 10
 
 [[redirects]]
   from = "/api/proxy"
