@@ -43,9 +43,20 @@ exports.handler = async (event) => {
 		};
 	}
 
-	// Global subscriptions array'den oku
-	const subscriptions = global.subscriptions || [];
-	console.log(`📊 ${subscriptions.length} subscriptions (global)`);
+	// TEST: Environment variable'dan oku
+	let subscriptions = [];
+	
+	if (process.env.TEST_SUBSCRIPTION) {
+		try {
+			const testSub = JSON.parse(process.env.TEST_SUBSCRIPTION);
+			subscriptions = [testSub];
+			console.log("✅ Using TEST_SUBSCRIPTION from env");
+		} catch (e) {
+			console.error("❌ Invalid TEST_SUBSCRIPTION:", e.message);
+		}
+	}
+	
+	console.log(`📊 ${subscriptions.length} subscriptions`);
 	
 	try {
 
@@ -75,7 +86,7 @@ exports.handler = async (event) => {
 				message: "✅ Webhook working!",
 				subscriptions: subscriptions.length,
 				sent: subscriptions.length,
-				note: "Using global variable (resets on deploy)",
+				note: process.env.TEST_SUBSCRIPTION ? "Using TEST_SUBSCRIPTION" : "No subscriptions",
 				timestamp: new Date().toISOString(),
 			}),
 		};
