@@ -1,15 +1,38 @@
 # Active Context: İftar Geri Sayım Uygulaması
 
 ## Mevcut Durum
-**Tarih**: 2025-10-19 10:30 UTC
-**Faz**: v2.0 PRODUCTION READY - Push Notifications Complete
+**Tarih**: 2025-10-20 23:55 UTC
+**Faz**: v2.1 PRODUCTION READY - Supabase Integration Complete
 **Mod**: Code
-**Tamamlanma**: %100 + Push Notifications + Safari Fix + Deployment Hazır
-**Status**: ✅ v2.0 TAMAMLANDI - PUSH NOTIFICATIONS AKTIF
+**Tamamlanma**: %100 + Push Notifications + Supabase Database
+**Status**: ✅ v2.1 TAMAMLANDI - TAM FONKSİYONEL
 
 ## Şu Anda Odaklanılan İşler
 
-### ✅ v2.0 - Push Notifications (TAMAMLANDI)
+### ✅ v2.1 - Supabase Integration (TAMAMLANDI - 2025-10-20)
+
+**Özellikler:**
+- ✅ Supabase PostgreSQL database
+- ✅ Sınırsız kullanıcı desteği
+- ✅ Persistent subscription storage
+- ✅ Soft delete (subscription korunur, enabled flag)
+- ✅ Gerçek iftar saati kontrolü (±1 dakika tolerans)
+- ✅ Kullanıcı bazlı bildirim tercihleri
+- ✅ Cron-job.org entegrasyonu (ücretsiz)
+- ✅ Test modları (TEST_IFTAR_TIME, TEST_NOTIFICATIONS)
+
+**Implementasyon:**
+- `save-subscription.js` - Supabase UPSERT
+- `send-notifications.js` - Supabase SELECT + iftar kontrolü
+- Netlify Blobs kaldırıldı (çalışmıyordu)
+- Cron-job.org webhook entegrasyonu
+- Gereksiz dosyalar silindi (scheduler.js, test functions)
+
+**Dokümantasyon:**
+- `CRON_SETUP.md` - Cron-job.org kurulum kılavuzu
+- `README.md` - Supabase bölümü eklendi
+
+### ✅ v2.0 - Push Notifications (TAMAMLANDI - 2025-10-19)
 
 #### Push Notifications Sistemi (100%)
 - [x] Service Worker (sw.js) - Push dinleme
@@ -596,11 +619,16 @@ Production (Custom domain + SSL)
 
 **Not**: Proje %100 tamamlandı ve deployment'a hazır. Netlify dosyaları hazır, sadece GitHub push + Netlify import gerekiyor.
 
-**Deployment Durumu**: 🚀 v2.0 READY
-**Versiyon**: 2.0.0 (Push Notifications)
-**Sonraki Adım**: 
-1. `npm install`
-2. `npm run generate-vapid`
-3. VAPID keys → Netlify Environment Variables
-4. `git push origin main`
-**Beklenen Süre**: ~15 dakika (npm install + deployment + DNS)
+**Deployment Durumu**: 🚀 v2.1 LIVE
+**Versiyon**: 2.1.0 (Supabase Integration)
+**Son Deploy**: 2025-10-20 23:55 UTC
+**Sonraki Test**: Yarın gerçek iftar saatinde
+
+**Production Checklist:**
+- ✅ Supabase database oluşturuldu
+- ✅ Environment variables eklendi
+- ✅ Cron-job.org kuruldu
+- ✅ Test modları kapatıldı
+- ✅ Auth token aktif
+- ✅ Domain bağlandı (iftarakalan.com)
+- ✅ SSL aktif

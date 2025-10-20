@@ -120,14 +120,60 @@ Browser → Proxy (CORS headers ekler) → emushaf API → Proxy → Browser
 
 **Detaylı kılavuz:** [`PUSH_NOTIFICATIONS.md`](PUSH_NOTIFICATIONS.md)
 
+### 1. Supabase Database Kurulumu
+
 ```bash
-# 1. VAPID keys oluştur
+# 1. Supabase hesabı aç: https://supabase.com
+# 2. New project oluştur
+# 3. SQL Editor'da çalıştır:
+
+CREATE TABLE subscriptions (
+  id SERIAL PRIMARY KEY,
+  endpoint TEXT UNIQUE NOT NULL,
+  subscription JSONB NOT NULL,
+  location JSONB,
+  settings JSONB,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_endpoint ON subscriptions(endpoint);
+
+# 4. Settings → API → Keys kopyala
+```
+
+### 2. VAPID Keys Oluştur
+
+```bash
+npm install
 npm run generate-vapid
+```
 
-# 2. Keys'leri Netlify Environment Variables'a ekle
-# VAPID_PUBLIC_KEY ve VAPID_PRIVATE_KEY
+### 3. Environment Variables (Netlify)
 
-# 3. Deploy
+```
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_KEY=eyJxxx...
+VAPID_PUBLIC_KEY=BEl62iUYg...
+VAPID_PRIVATE_KEY=bdSiNzUhU...
+CRON_SECRET_TOKEN=your-secret-token
+```
+
+### 4. Cron Job Kurulumu
+
+**Detaylı kılavuz:** [`CRON_SETUP.md`](CRON_SETUP.md)
+
+```bash
+# 1. Cron-job.org hesabı aç
+# 2. Create cronjob:
+#    URL: https://iftarakalan.com/api/send-notifications
+#    Schedule: Every 1 minute
+#    Headers: x-auth-token: <CRON_SECRET_TOKEN>
+```
+
+### 5. Deploy
+
+```bash
 git push origin main
 ```
 
@@ -215,6 +261,16 @@ git push origin main
 - ✅ Custom domain desteği
 - ✅ Continuous deployment (git push = auto deploy)
 - ✅ Deploy previews (PR'lar için)
+
+## 🎉 Özellikler
+
+### v2.1 - Supabase Integration
+- 📦 **Supabase PostgreSQL**: Sınırsız kullanıcı desteği
+- 🔄 **Persistent Storage**: Subscriptions kalıcı olarak saklanır
+- 👥 **Çok Kullanıcı**: Her kullanıcı kendi tercihlerini seçer
+- ⏰ **Cron-job.org**: Ücretsiz cron servisi (her dakika)
+- ✅ **±1 Dakika Tolerans**: Bildirimler kesin zamanda gelir
+- 🧪 **Test Modları**: TEST_NOTIFICATIONS, TEST_IFTAR_TIME
 
 ## 📦 Alternatif Deployment Seçenekleri
 
