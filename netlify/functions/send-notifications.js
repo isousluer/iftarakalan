@@ -16,17 +16,20 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
 exports.handler = async (event) => {
 	console.log("⏰ Notification sender çalıştı:", new Date().toISOString());
 
-	// Token kontrolü
+	// Token kontrolü (opsiyonel - sadece token varsa kontrol et)
 	const authToken = event.headers["x-auth-token"] || event.headers["X-Auth-Token"];
 	const expectedToken = process.env.CRON_SECRET_TOKEN;
 
-	if (expectedToken && authToken !== expectedToken) {
+	if (expectedToken && expectedToken !== "" && authToken !== expectedToken) {
+		console.warn("⚠️ Unauthorized - Token mismatch");
 		return {
 			statusCode: 401,
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ error: "Unauthorized" }),
 		};
 	}
+
+	console.log("✅ Auth OK (token:", expectedToken ? "required" : "not required", ")");
 
 	// VAPID keys kontrolü
 	if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
@@ -42,28 +45,18 @@ exports.handler = async (event) => {
 		// Şimdilik boş (in-memory storage yok)
 		const subscriptions = [];
 
-		if (subscriptions.length === 0) {
-			console.log("ℹ️ No subscriptions (database not implemented)");
-			return {
-				statusCode: 200,
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					message: "No subscriptions",
-					note: "Database integration needed",
-				}),
-			};
-		}
-
-		// Bildirim gönderme mantığı...
+		console.log("ℹ️ No subscriptions (database not implemented)");
 		return {
 			statusCode: 200,
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
-				message: "Notifications sent",
-				total: 0,
-				sent: 0,
+				message: "Webhook OK - No subscriptions",
+				note: "Database integration needed for production",
+				timestamp: new Date().toISOString(),
 			}),
 		};
+
+
 	} catch (error) {
 		console.error("❌ Error:", error);
 		return {
