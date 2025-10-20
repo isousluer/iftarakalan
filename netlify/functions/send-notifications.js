@@ -142,18 +142,15 @@ async function checkAndSendNotification(subData) {
 			return false;
 		}
 
+		// Şu anki zaman (Türkiye saati için UTC+3)
+		let now = new Date();
+		
 		// TEST MODE: İftar saatini şu andan 1 saat sonrasına ayarla
 		if (process.env.TEST_IFTAR_TIME === "true") {
-			const now = new Date();
 			const testIftar = new Date(now.getTime() + 60 * 60 * 1000); // 1 saat sonra
-			// Türkiye saati (UTC+3)
-			const turkeyTime = new Date(testIftar.getTime() + 3 * 60 * 60 * 1000);
-			iftarTime = `${turkeyTime.getHours().toString().padStart(2, "0")}:${turkeyTime.getMinutes().toString().padStart(2, "0")}`;
-			console.log(`🧪 TEST MODE: İftar saati ${iftarTime} olarak ayarlandı (Türkiye saati)`);
+			iftarTime = `${testIftar.getHours().toString().padStart(2, "0")}:${testIftar.getMinutes().toString().padStart(2, "0")}`;
+			console.log(`🧪 TEST MODE: İftar saati ${iftarTime} olarak ayarlandı`);
 		}
-
-		// Şu anki zaman
-		const now = new Date();
 		const [hours, minutes] = iftarTime.split(":").map(Number);
 
 		// Bugünün iftar saati
