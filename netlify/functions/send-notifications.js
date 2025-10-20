@@ -57,13 +57,32 @@ exports.handler = async (event) => {
 			console.log("ℹ️ No subscriptions yet");
 		}
 
+		// TEST: Her çalıştırmada bildirim gönder
+		if (subscriptions.length > 0) {
+			for (const sub of subscriptions) {
+				try {
+					await webpush.sendNotification(
+						sub.subscription,
+						JSON.stringify({
+							title: "Test Bildirimi 🌙",
+							body: "Webhook çalışıyor!",
+							icon: "/favicon.svg",
+						})
+					);
+					console.log("✅ Test notification sent");
+				} catch (error) {
+					console.error("❌ Send error:", error);
+				}
+			}
+		}
+
 		return {
 			statusCode: 200,
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
 				message: "✅ Webhook working!",
-				subscriptions: 0,
-				note: "Database needed",
+				subscriptions: subscriptions.length,
+				sent: subscriptions.length,
 				timestamp: new Date().toISOString(),
 			}),
 		};
