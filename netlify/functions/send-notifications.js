@@ -43,18 +43,20 @@ exports.handler = async (event) => {
 		};
 	}
 
+	let subscriptions = [];
+	
 	try {
 		// Netlify Blob'dan subscriptions oku
-		const { getStore } = await import("@netlify/blobs");
-		const store = getStore("subscriptions");
-		
-		let subscriptions = [];
 		try {
+			const { getStore } = await import("@netlify/blobs");
+			const store = getStore("subscriptions");
 			const data = await store.get("list", { type: "json" });
 			subscriptions = data || [];
-			console.log(`📊 ${subscriptions.length} subscriptions loaded`);
-		} catch (error) {
-			console.log("ℹ️ No subscriptions yet");
+			console.log(`📊 ${subscriptions.length} subscriptions loaded from Blobs`);
+		} catch (blobError) {
+			console.warn("⚠️ Blobs error:", blobError.message);
+			console.log("ℹ️ Using empty subscriptions list");
+			subscriptions = [];
 		}
 
 		// TEST: Her çalıştırmada bildirim gönder
