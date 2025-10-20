@@ -43,10 +43,9 @@ exports.handler = async (event) => {
 		};
 	}
 
-	// In-memory store'dan oku
-	const store = require("./subscriptions-store");
-	const subscriptions = store.getAll();
-	console.log(`📊 ${subscriptions.length} subscriptions loaded (in-memory)`);
+	// Global subscriptions array'den oku
+	const subscriptions = global.subscriptions || [];
+	console.log(`📊 ${subscriptions.length} subscriptions (global)`);
 	
 	try {
 
@@ -76,6 +75,7 @@ exports.handler = async (event) => {
 				message: "✅ Webhook working!",
 				subscriptions: subscriptions.length,
 				sent: subscriptions.length,
+				note: "Using global variable (resets on deploy)",
 				timestamp: new Date().toISOString(),
 			}),
 		};

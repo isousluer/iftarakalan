@@ -3,7 +3,9 @@
  * Kullanıcı subscription bilgilerini kaydeder
  */
 
-const store = require("./subscriptions-store");
+// Temporary: Global subscriptions array
+// Her deploy'da sıfırlanır - sadece test için
+global.subscriptions = global.subscriptions || [];
 
 exports.handler = async (event) => {
 	if (event.httpMethod !== "POST") {
@@ -24,16 +26,26 @@ exports.handler = async (event) => {
 			};
 		}
 
-		// In-memory store'a kaydet
+		// Global array'e kaydet (test için)
 		const subscriptionData = {
 			subscription,
 			location,
 			settings,
 			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
 		};
 
-		store.add(subscriptionData);
+		// Mevcut var mı kontrol et
+		const existingIndex = global.subscriptions.findIndex(
+			(s) => s.subscription.endpoint === subscription.endpoint
+		);
+
+		if (existingIndex !== -1) {
+			global.subscriptions[existingIndex] = subscriptionData;
+		} else {
+			global.subscriptions.push(subscriptionData);
+		}
+
+		console.log(`📊 Total: ${global.subscriptions.length} subscriptions`);
 
 		console.log(`✅ Subscription saved: ${subscription.endpoint.substring(0, 50)}...`);
 
@@ -45,7 +57,8 @@ exports.handler = async (event) => {
 			},
 			body: JSON.stringify({
 				success: true,
-				message: "Subscription saved (in-memory)",
+				message: "Subscription saved (global)",
+				total: global.subscriptions.length,
 			}),
 		};
 	} catch (error) {
