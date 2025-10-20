@@ -146,8 +146,10 @@ async function checkAndSendNotification(subData) {
 		if (process.env.TEST_IFTAR_TIME === "true") {
 			const now = new Date();
 			const testIftar = new Date(now.getTime() + 60 * 60 * 1000); // 1 saat sonra
-			iftarTime = `${testIftar.getHours().toString().padStart(2, "0")}:${testIftar.getMinutes().toString().padStart(2, "0")}`;
-			console.log(`🧪 TEST MODE: İftar saati ${iftarTime} olarak ayarlandı`);
+			// Türkiye saati (UTC+3)
+			const turkeyTime = new Date(testIftar.getTime() + 3 * 60 * 60 * 1000);
+			iftarTime = `${turkeyTime.getHours().toString().padStart(2, "0")}:${turkeyTime.getMinutes().toString().padStart(2, "0")}`;
+			console.log(`🧪 TEST MODE: İftar saati ${iftarTime} olarak ayarlandı (Türkiye saati)`);
 		}
 
 		// Şu anki zaman
