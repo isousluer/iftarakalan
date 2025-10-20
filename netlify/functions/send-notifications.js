@@ -44,8 +44,18 @@ exports.handler = async (event) => {
 	}
 
 	try {
-		// TODO: Database'den subscriptions oku
-		const subscriptions = [];
+		// Netlify Blob'dan subscriptions oku
+		const { getStore } = await import("@netlify/blobs");
+		const store = getStore("subscriptions");
+		
+		let subscriptions = [];
+		try {
+			const data = await store.get("list", { type: "json" });
+			subscriptions = data || [];
+			console.log(`📊 ${subscriptions.length} subscriptions loaded`);
+		} catch (error) {
+			console.log("ℹ️ No subscriptions yet");
+		}
 
 		return {
 			statusCode: 200,

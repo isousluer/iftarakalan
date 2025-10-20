@@ -3,14 +3,7 @@
  * Kullanıcı subscription bilgilerini kaydeder
  */
 
-const fs = require("fs").promises;
-const path = require("path");
-
-// Subscriptions dosya yolu (basit JSON storage)
-const SUBSCRIPTIONS_FILE = "/tmp/subscriptions.json";
-
 exports.handler = async (event) => {
-	// Sadece POST isteklerini kabul et
 	if (event.httpMethod !== "POST") {
 		return {
 			statusCode: 405,
@@ -29,13 +22,16 @@ exports.handler = async (event) => {
 			};
 		}
 
+		// Netlify Blob storage
+		const { getStore } = await import("@netlify/blobs");
+		const store = getStore("subscriptions");
+
 		// Mevcut subscriptions'ı oku
 		let subscriptions = [];
 		try {
-			const fileContent = await fs.readFile(SUBSCRIPTIONS_FILE, "utf8");
-			subscriptions = JSON.parse(fileContent);
+			const data = await store.get("list", { type: "json" });
+			subscriptions = data || [];
 		} catch (error) {
-			// Dosya yoksa boş array
 			subscriptions = [];
 		}
 
@@ -56,10 +52,10 @@ exports.handler = async (event) => {
 			subscriptions.push(subscriptionData);
 		}
 
-		// Dosyaya kaydet
-		await fs.writeFile(SUBSCRIPTIONS_FILE, JSON.stringify(subscriptions, null, 2));
+		// Blob'a kaydet
+		await store.set("list", JSON.stringify(subscriptions));
 
-		console.log(`✅ Subscription kaydedildi: ${subscription.endpoint.substring(0, 50)}...`);
+		console.log(`✅ Subscription saved: ${subscription.endpoint.substring(0, 50)}...`);
 
 		return {
 			statusCode: 200,
@@ -76,7 +72,7 @@ exports.handler = async (event) => {
 		console.error("❌ Save subscription error:", error);
 		return {
 			statusCode: 500,
-			body: JSON.stringify({ error: "Internal server error" }),
+			body: JSON.stringify({ error: error.message }),
 		};
 	}
 };

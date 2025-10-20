@@ -4,10 +4,12 @@
 	"description": "İftara kalan süreyi gösteren web uygulaması - Push Notifications",
 	"scripts": {
 		"dev": "python3 proxy_server.py",
-		"generate-vapid": "node scripts/generate-vapid.js"
+		"generate-vapid": "node scripts/generate-vapid.js",
+		"install": "npm install"
 	},
 	"dependencies": {
-		"web-push": "^3.6.7"
+		"web-push": "^3.6.7",
+		"@netlify/blobs": "^7.0.0"
 	},
 	"devDependencies": {},
 	"keywords": ["iftar", "ramazan", "namaz", "vakitler", "pwa", "push-notifications"],
