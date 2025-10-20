@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhook Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; margin: 10px; }
+        #result { margin-top: 20px; padding: 15px; background: #000; border: 1px solid #0f0; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>🔔 Webhook Test</h1>
+    
+    <button onclick="testWebhook()">Test Webhook (Local)</button>
+    <button onclick="testWebhookProd()">Test Webhook (Production)</button>
+    
+    <div id="result">Sonuç burada görünecek...</div>
+
+    <script>
+        async function testWebhook() {
+            const result = document.getElementById('result');
+            result.textContent = '⏳ Test ediliyor...';
+            
+            try {
+                // Local Netlify Dev
+                const response = await fetch('http://localhost:8888/.netlify/functions/send-notifications', {
+                    method: 'GET',
+                    headers: {
+                        'x-auth-token': 'test-token-123'
+                    }
+                });
+                
+                const data = await response.json();
+                result.textContent = `✅ Status: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                result.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        async function testWebhookProd() {
+            const result = document.getElementById('result');
+            result.textContent = '⏳ Production test ediliyor...';
+            
+            const token = prompt('CRON_SECRET_TOKEN girin:');
+            if (!token) return;
+            
+            try {
+                const response = await fetch('/api/send-notifications', {
+                    method: 'GET',
+                    headers: {
+                        'x-auth-token': token
+                    }
+                });
+                
+                const data = await response.json();
+                result.textContent = `✅ Status: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                result.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
