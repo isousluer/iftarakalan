@@ -1,7 +1,9 @@
 /**
  * Save Subscription Endpoint
- * Kullanıcı subscription bilgilerini kaydeder
+ * Kullanıcı subscription bilgilerini Supabase'e kaydeder
  */
+
+const { createClient } = require("@supabase/supabase-js");
 
 exports.handler = async (event) => {
 	if (event.httpMethod !== "POST") {
@@ -22,55 +24,33 @@ exports.handler = async (event) => {
 			};
 		}
 
-		// Netlify Blobs'a kaydet
-		try {
-			const { getStore } = await import("@netlify/blobs");
-			const store = getStore({
-				name: "subscriptions",
-				siteID: process.env.NETLIFY_SITE_ID,
-				token: process.env.NETLIFY_TOKEN,
-			});
+		// Supabase client
+		const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-			// Mevcut subscriptions'ı oku
-			let subscriptions = [];
-			try {
-				const data = await store.get("list", { type: "json" });
-				subscriptions = data || [];
-			} catch (e) {
-				subscriptions = [];
-			}
+		// Upsert (insert or update)
+		const { data: result, error } = await supabase
+			.from("subscriptions")
+			.upsert(
+				{
+					endpoint: subscription.endpoint,
+					subscription: subscription,
+					location: location,
+					settings: settings,
+					updated_at: new Date().toISOString(),
+				},
+				{ onConflict: "endpoint" }
+			)
+			.select();
 
-			// Yeni subscription ekle veya güncelle
-			const existingIndex = subscriptions.findIndex(
-				(s) => s.subscription.endpoint === subscription.endpoint
-			);
-
-			const subscriptionData = {
-				subscription,
-				location,
-				settings,
-				createdAt: existingIndex === -1 ? new Date().toISOString() : subscriptions[existingIndex].createdAt,
-				updatedAt: new Date().toISOString(),
+		if (error) {
+			console.error("❌ Supabase error:", error);
+			return {
+				statusCode: 500,
+				body: JSON.stringify({ error: error.message }),
 			};
-
-			if (existingIndex !== -1) {
-				subscriptions[existingIndex] = subscriptionData;
-			} else {
-				subscriptions.push(subscriptionData);
-			}
-
-			// Blobs'a kaydet
-			await store.set("list", JSON.stringify(subscriptions));
-			console.log(`✅ Saved to Blobs. Total: ${subscriptions.length}`);
-		} catch (blobError) {
-			console.error("❌ Blobs save error:", blobError.message);
-			console.error("Blobs config:", {
-				hasSiteID: !!process.env.NETLIFY_SITE_ID,
-				hasToken: !!process.env.NETLIFY_TOKEN
-			});
 		}
 
-		console.log(`✅ Subscription saved: ${subscription.endpoint.substring(0, 50)}...`);
+		console.log(`✅ Subscription saved to Supabase: ${subscription.endpoint.substring(0, 50)}...`);
 
 		return {
 			statusCode: 200,

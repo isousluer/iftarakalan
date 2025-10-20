@@ -31,25 +31,26 @@ exports.handler = async (event) => {
 		};
 	}
 
-	// Netlify Blobs'dan subscriptions oku
+	// Supabase'den subscriptions oku
 	let subscriptions = [];
 	
 	try {
-		const { getStore } = await import("@netlify/blobs");
-		const store = getStore({
-			name: "subscriptions",
-			siteID: process.env.NETLIFY_SITE_ID,
-			token: process.env.NETLIFY_TOKEN,
-		});
-		const data = await store.get("list", { type: "json" });
+		const { createClient } = require("@supabase/supabase-js");
+		const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+		
+		const { data, error } = await supabase
+			.from("subscriptions")
+			.select("*")
+			.eq("settings->>enabled", true);
+		
+		if (error) {
+			throw error;
+		}
+		
 		subscriptions = data || [];
-		console.log(`📊 ${subscriptions.length} subscriptions loaded from Blobs`);
-	} catch (blobError) {
-		console.warn("⚠️ Blobs error:", blobError.message);
-		console.warn("Blobs config:", {
-			hasSiteID: !!process.env.NETLIFY_SITE_ID,
-			hasToken: !!process.env.NETLIFY_TOKEN
-		});
+		console.log(`📊 ${subscriptions.length} subscriptions loaded from Supabase`);
+	} catch (dbError) {
+		console.error("❌ Supabase error:", dbError.message);
 		
 		// Fallback: TEST_SUBSCRIPTION
 		if (process.env.TEST_SUBSCRIPTION) {

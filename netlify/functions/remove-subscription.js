@@ -1,11 +1,9 @@
 /**
  * Remove Subscription Endpoint
- * Kullanıcı subscription'ını siler
+ * Kullanıcı subscription'ı Supabase'den siler
  */
 
-const fs = require("fs").promises;
-
-const SUBSCRIPTIONS_FILE = "/tmp/subscriptions.json";
+const { createClient } = require("@supabase/supabase-js");
 
 exports.handler = async (event) => {
 	if (event.httpMethod !== "POST") {
@@ -16,7 +14,8 @@ exports.handler = async (event) => {
 	}
 
 	try {
-		const { endpoint } = JSON.parse(event.body);
+		const data = JSON.parse(event.body);
+		const { endpoint } = data;
 
 		if (!endpoint) {
 			return {
@@ -25,25 +24,21 @@ exports.handler = async (event) => {
 			};
 		}
 
-		// Mevcut subscriptions'ı oku
-		let subscriptions = [];
-		try {
-			const fileContent = await fs.readFile(SUBSCRIPTIONS_FILE, "utf8");
-			subscriptions = JSON.parse(fileContent);
-		} catch (error) {
+		// Supabase client
+		const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
+		// Delete
+		const { error } = await supabase.from("subscriptions").delete().eq("endpoint", endpoint);
+
+		if (error) {
+			console.error("❌ Supabase delete error:", error);
 			return {
-				statusCode: 404,
-				body: JSON.stringify({ error: "No subscriptions found" }),
+				statusCode: 500,
+				body: JSON.stringify({ error: error.message }),
 			};
 		}
 
-		// Subscription'ı sil
-		subscriptions = subscriptions.filter((sub) => sub.subscription.endpoint !== endpoint);
-
-		// Dosyaya kaydet
-		await fs.writeFile(SUBSCRIPTIONS_FILE, JSON.stringify(subscriptions, null, 2));
-
-		console.log(`✅ Subscription silindi: ${endpoint.substring(0, 50)}...`);
+		console.log(`✅ Subscription removed: ${endpoint.substring(0, 50)}...`);
 
 		return {
 			statusCode: 200,
@@ -60,7 +55,7 @@ exports.handler = async (event) => {
 		console.error("❌ Remove subscription error:", error);
 		return {
 			statusCode: 500,
-			body: JSON.stringify({ error: "Internal server error" }),
+			body: JSON.stringify({ error: error.message }),
 		};
 	}
 };

@@ -8,7 +8,7 @@
 	},
 	"dependencies": {
 		"web-push": "^3.6.7",
-		"@netlify/blobs": "^7.0.0"
+		"@supabase/supabase-js": "^2.39.0"
 	},
 	"devDependencies": {},
 	"keywords": ["iftar", "ramazan", "namaz", "vakitler", "pwa", "push-notifications"],
