@@ -4,8 +4,7 @@
 	"description": "İftara kalan süreyi gösteren web uygulaması - Push Notifications",
 	"scripts": {
 		"dev": "python3 proxy_server.py",
-		"generate-vapid": "node scripts/generate-vapid.js",
-		"install": "npm install"
+		"generate-vapid": "node scripts/generate-vapid.js"
 	},
 	"dependencies": {
 		"web-push": "^3.6.7",
