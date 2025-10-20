@@ -14,7 +14,10 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
 }
 
 exports.handler = async (event) => {
-	console.log("⏰ Notification sender çalıştı:", new Date().toISOString());
+	console.log("=".repeat(50));
+	console.log("🚀 SEND-NOTIFICATIONS FUNCTION CALLED");
+	console.log("⏰ Time:", new Date().toISOString());
+	console.log("=".repeat(50));
 
 	// Token kontrolü devre dışı (test için)
 	console.log("ℹ️ Auth disabled for testing");
@@ -57,7 +60,7 @@ exports.handler = async (event) => {
 							icon: "/favicon.svg",
 						})
 					);
-					console.log("✅ Test notification sent");
+					console.log("🚀🚀🚀 TEST NOTIFICATION SENT 🚀🚀🚀");
 				} catch (error) {
 					console.error("❌ Send error:", error);
 				}
