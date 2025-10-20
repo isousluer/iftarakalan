@@ -3,6 +3,8 @@
  * Kullanıcı subscription bilgilerini kaydeder
  */
 
+const store = require("./subscriptions-store");
+
 exports.handler = async (event) => {
 	if (event.httpMethod !== "POST") {
 		return {
@@ -22,46 +24,16 @@ exports.handler = async (event) => {
 			};
 		}
 
-		// Netlify Blob storage
-		let subscriptions = [];
-		
-		try {
-			const { getStore } = await import("@netlify/blobs");
-			const store = getStore("subscriptions");
-			const data = await store.get("list", { type: "json" });
-			subscriptions = data || [];
-		} catch (blobError) {
-			console.warn("⚠️ Blobs not available:", blobError.message);
-			subscriptions = [];
-		}
-
-		// Yeni subscription ekle veya güncelle
-		const existingIndex = subscriptions.findIndex((sub) => sub.subscription.endpoint === subscription.endpoint);
-
+		// In-memory store'a kaydet
 		const subscriptionData = {
 			subscription,
 			location,
 			settings,
-			createdAt: existingIndex === -1 ? new Date().toISOString() : subscriptions[existingIndex].createdAt,
+			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
 		};
 
-		if (existingIndex !== -1) {
-			subscriptions[existingIndex] = subscriptionData;
-		} else {
-			subscriptions.push(subscriptionData);
-		}
-
-		// Blob'a kaydet
-		try {
-			const { getStore } = await import("@netlify/blobs");
-			const store = getStore("subscriptions");
-			await store.set("list", JSON.stringify(subscriptions));
-			console.log("✅ Saved to Blobs");
-		} catch (blobError) {
-			console.error("❌ Blobs save error:", blobError.message);
-			// Devam et (en azından log'da görünür)
-		}
+		store.add(subscriptionData);
 
 		console.log(`✅ Subscription saved: ${subscription.endpoint.substring(0, 50)}...`);
 
@@ -73,7 +45,7 @@ exports.handler = async (event) => {
 			},
 			body: JSON.stringify({
 				success: true,
-				message: "Subscription saved",
+				message: "Subscription saved (in-memory)",
 			}),
 		};
 	} catch (error) {
