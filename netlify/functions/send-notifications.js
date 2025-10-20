@@ -155,6 +155,20 @@ async function checkAndSendNotification(subData) {
 
 		console.log(`⏰ İftar: ${iftarTime}, Kalan: ${diffMinutes} dakika`);
 
+		// TEST MODE: Her zaman bildirim gönder
+		if (process.env.TEST_NOTIFICATIONS === "true") {
+			console.log("🧪 TEST MODE: Sending notification");
+			const testNotification = {
+				title: "TEST: İftara Kalan 🌙",
+				body: `İftar: ${iftarTime}, Kalan: ${diffMinutes} dk`,
+				icon: "/favicon.svg",
+				badge: "/favicon.svg",
+			};
+			await webpush.sendNotification(subscription, JSON.stringify(testNotification));
+			console.log("✅ TEST bildirim gönderildi");
+			return true;
+		}
+
 		// Bildirim kontrolü
 		let notification = null;
 
