@@ -16,20 +16,23 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
 exports.handler = async (event) => {
 	console.log("⏰ Notification sender çalıştı:", new Date().toISOString());
 
-	// Debug: Token bilgisi
+	// Token kontrolü (sadece token tanımlıysa)
 	const authToken = event.headers["x-auth-token"] || event.headers["X-Auth-Token"];
 	const expectedToken = process.env.CRON_SECRET_TOKEN;
-	
-	console.log("🔑 Auth Debug:", {
-		hasExpectedToken: !!expectedToken,
-		hasAuthToken: !!authToken,
-		match: authToken === expectedToken
-	});
 
-	// Token kontrolü devre dışı (test için)
-	// if (expectedToken && authToken !== expectedToken) {
-	// 	return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
-	// }
+	if (expectedToken && expectedToken.length > 0) {
+		if (authToken !== expectedToken) {
+			console.warn("⚠️ Unauthorized: Token mismatch");
+			return {
+				statusCode: 401,
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ error: "Unauthorized" }),
+			};
+		}
+		console.log("✅ Auth OK");
+	} else {
+		console.log("ℹ️ Auth disabled (no token configured)");
+	}
 
 	// VAPID keys kontrolü
 	if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
