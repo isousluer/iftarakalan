@@ -95,16 +95,21 @@ const NotificationManager = {
 			let subscription = await this.swRegistration.pushManager.getSubscription();
 
 			if (!subscription) {
-				// VAPID public key (backend'den alınacak)
-				const vapidPublicKey = await this.getVapidPublicKey();
+				try {
+					// VAPID public key (backend'den alınacak)
+					const vapidPublicKey = await this.getVapidPublicKey();
 
-				// Yeni subscription oluştur
-				subscription = await this.swRegistration.pushManager.subscribe({
-					userVisibleOnly: true,
-					applicationServerKey: this.urlBase64ToUint8Array(vapidPublicKey),
-				});
+					// Yeni subscription oluştur
+					subscription = await this.swRegistration.pushManager.subscribe({
+						userVisibleOnly: true,
+						applicationServerKey: this.urlBase64ToUint8Array(vapidPublicKey),
+					});
 
-				console.log("✅ Push subscription oluşturuldu");
+					console.log("✅ Push subscription oluşturuldu");
+				} catch (subError) {
+					console.error("❌ Subscription oluşturma hatası:", subError);
+					throw subError;
+				}
 			}
 
 			// Subscription'ı backend'e kaydet
@@ -122,17 +127,18 @@ const NotificationManager = {
 	 */
 	async getVapidPublicKey() {
 		try {
-			const response = await fetch("/api/vapid-public-key", { timeout: 2000 });
+			const response = await fetch("/api/vapid-public-key");
 			if (response.ok) {
 				const data = await response.json();
+				console.log("✅ VAPID key alındı");
 				return data.publicKey;
+			} else {
+				throw new Error(`VAPID key error: ${response.status}`);
 			}
 		} catch (error) {
-			console.warn("⚠️ VAPID key backend'den alınamadı (local development?)");
+			console.error("❌ VAPID key alınamadı:", error);
+			throw error;
 		}
-		// Fallback: Test key (local development için)
-		console.log("ℹ️ Test VAPID key kullanılıyor");
-		return "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U";
 	},
 
 	/**
