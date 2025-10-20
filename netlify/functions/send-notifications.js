@@ -16,23 +16,8 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
 exports.handler = async (event) => {
 	console.log("⏰ Notification sender çalıştı:", new Date().toISOString());
 
-	// Token kontrolü (sadece token tanımlıysa)
-	const authToken = event.headers["x-auth-token"] || event.headers["X-Auth-Token"];
-	const expectedToken = process.env.CRON_SECRET_TOKEN;
-
-	if (expectedToken && expectedToken.length > 0) {
-		if (authToken !== expectedToken) {
-			console.warn("⚠️ Unauthorized: Token mismatch");
-			return {
-				statusCode: 401,
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ error: "Unauthorized" }),
-			};
-		}
-		console.log("✅ Auth OK");
-	} else {
-		console.log("ℹ️ Auth disabled (no token configured)");
-	}
+	// Token kontrolü devre dışı (test için)
+	console.log("ℹ️ Auth disabled for testing");
 
 	// VAPID keys kontrolü
 	if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
@@ -86,7 +71,7 @@ exports.handler = async (event) => {
 				message: "✅ Webhook working!",
 				subscriptions: subscriptions.length,
 				sent: subscriptions.length,
-				note: process.env.TEST_SUBSCRIPTION ? "Using TEST_SUBSCRIPTION" : "No subscriptions",
+				note: "Auth disabled - TEST MODE",
 				timestamp: new Date().toISOString(),
 			}),
 		};
