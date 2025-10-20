@@ -135,11 +135,19 @@ async function checkAndSendNotification(subData) {
 
 	try {
 		// İftar saatini API'den al
-		const iftarTime = await getIftarTime(location.ilceId);
+		let iftarTime = await getIftarTime(location.ilceId);
 
 		if (!iftarTime) {
 			console.log("⚠️ Could not get iftar time");
 			return false;
+		}
+
+		// TEST MODE: İftar saatini şu andan 1 saat sonrasına ayarla
+		if (process.env.TEST_IFTAR_TIME === "true") {
+			const now = new Date();
+			const testIftar = new Date(now.getTime() + 60 * 60 * 1000); // 1 saat sonra
+			iftarTime = `${testIftar.getHours().toString().padStart(2, "0")}:${testIftar.getMinutes().toString().padStart(2, "0")}`;
+			console.log(`🧪 TEST MODE: İftar saati ${iftarTime} olarak ayarlandı`);
 		}
 
 		// Şu anki zaman
