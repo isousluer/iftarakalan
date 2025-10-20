@@ -25,7 +25,11 @@ exports.handler = async (event) => {
 		// Netlify Blobs'a kaydet
 		try {
 			const { getStore } = await import("@netlify/blobs");
-			const store = getStore("subscriptions");
+			const store = getStore({
+				name: "subscriptions",
+				siteID: process.env.NETLIFY_SITE_ID,
+				token: process.env.NETLIFY_TOKEN,
+			});
 
 			// Mevcut subscriptions'ı oku
 			let subscriptions = [];
@@ -60,7 +64,10 @@ exports.handler = async (event) => {
 			console.log(`✅ Saved to Blobs. Total: ${subscriptions.length}`);
 		} catch (blobError) {
 			console.error("❌ Blobs save error:", blobError.message);
-			// Devam et (en azından log'da görünür)
+			console.error("Blobs config:", {
+				hasSiteID: !!process.env.NETLIFY_SITE_ID,
+				hasToken: !!process.env.NETLIFY_TOKEN
+			});
 		}
 
 		console.log(`✅ Subscription saved: ${subscription.endpoint.substring(0, 50)}...`);

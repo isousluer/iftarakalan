@@ -36,12 +36,20 @@ exports.handler = async (event) => {
 	
 	try {
 		const { getStore } = await import("@netlify/blobs");
-		const store = getStore("subscriptions");
+		const store = getStore({
+			name: "subscriptions",
+			siteID: process.env.NETLIFY_SITE_ID,
+			token: process.env.NETLIFY_TOKEN,
+		});
 		const data = await store.get("list", { type: "json" });
 		subscriptions = data || [];
 		console.log(`📊 ${subscriptions.length} subscriptions loaded from Blobs`);
 	} catch (blobError) {
 		console.warn("⚠️ Blobs error:", blobError.message);
+		console.warn("Blobs config:", {
+			hasSiteID: !!process.env.NETLIFY_SITE_ID,
+			hasToken: !!process.env.NETLIFY_TOKEN
+		});
 		
 		// Fallback: TEST_SUBSCRIPTION
 		if (process.env.TEST_SUBSCRIPTION) {
