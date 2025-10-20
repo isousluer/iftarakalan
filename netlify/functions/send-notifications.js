@@ -31,20 +31,29 @@ exports.handler = async (event) => {
 		};
 	}
 
-	// TEST: Environment variable'dan oku
+	// Netlify Blobs'dan subscriptions oku
 	let subscriptions = [];
 	
-	if (process.env.TEST_SUBSCRIPTION) {
-		try {
-			const testSub = JSON.parse(process.env.TEST_SUBSCRIPTION);
-			subscriptions = [testSub];
-			console.log("✅ Using TEST_SUBSCRIPTION from env");
-		} catch (e) {
-			console.error("❌ Invalid TEST_SUBSCRIPTION:", e.message);
+	try {
+		const { getStore } = await import("@netlify/blobs");
+		const store = getStore("subscriptions");
+		const data = await store.get("list", { type: "json" });
+		subscriptions = data || [];
+		console.log(`📊 ${subscriptions.length} subscriptions loaded from Blobs`);
+	} catch (blobError) {
+		console.warn("⚠️ Blobs error:", blobError.message);
+		
+		// Fallback: TEST_SUBSCRIPTION
+		if (process.env.TEST_SUBSCRIPTION) {
+			try {
+				const testSub = JSON.parse(process.env.TEST_SUBSCRIPTION);
+				subscriptions = [testSub];
+				console.log("✅ Using TEST_SUBSCRIPTION fallback");
+			} catch (e) {
+				console.error("❌ Invalid TEST_SUBSCRIPTION:", e.message);
+			}
 		}
 	}
-	
-	console.log(`📊 ${subscriptions.length} subscriptions`);
 	
 	try {
 

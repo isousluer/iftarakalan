@@ -3,10 +3,6 @@
  * Kullanıcı subscription bilgilerini kaydeder
  */
 
-// Temporary: Global subscriptions array
-// Her deploy'da sıfırlanır - sadece test için
-global.subscriptions = global.subscriptions || [];
-
 exports.handler = async (event) => {
 	if (event.httpMethod !== "POST") {
 		return {
@@ -26,26 +22,46 @@ exports.handler = async (event) => {
 			};
 		}
 
-		// Global array'e kaydet (test için)
-		const subscriptionData = {
-			subscription,
-			location,
-			settings,
-			createdAt: new Date().toISOString(),
-		};
+		// Netlify Blobs'a kaydet
+		try {
+			const { getStore } = await import("@netlify/blobs");
+			const store = getStore("subscriptions");
 
-		// Mevcut var mı kontrol et
-		const existingIndex = global.subscriptions.findIndex(
-			(s) => s.subscription.endpoint === subscription.endpoint
-		);
+			// Mevcut subscriptions'ı oku
+			let subscriptions = [];
+			try {
+				const data = await store.get("list", { type: "json" });
+				subscriptions = data || [];
+			} catch (e) {
+				subscriptions = [];
+			}
 
-		if (existingIndex !== -1) {
-			global.subscriptions[existingIndex] = subscriptionData;
-		} else {
-			global.subscriptions.push(subscriptionData);
+			// Yeni subscription ekle veya güncelle
+			const existingIndex = subscriptions.findIndex(
+				(s) => s.subscription.endpoint === subscription.endpoint
+			);
+
+			const subscriptionData = {
+				subscription,
+				location,
+				settings,
+				createdAt: existingIndex === -1 ? new Date().toISOString() : subscriptions[existingIndex].createdAt,
+				updatedAt: new Date().toISOString(),
+			};
+
+			if (existingIndex !== -1) {
+				subscriptions[existingIndex] = subscriptionData;
+			} else {
+				subscriptions.push(subscriptionData);
+			}
+
+			// Blobs'a kaydet
+			await store.set("list", JSON.stringify(subscriptions));
+			console.log(`✅ Saved to Blobs. Total: ${subscriptions.length}`);
+		} catch (blobError) {
+			console.error("❌ Blobs save error:", blobError.message);
+			// Devam et (en azından log'da görünür)
 		}
-
-		console.log(`📊 Total: ${global.subscriptions.length} subscriptions`);
 
 		console.log(`✅ Subscription saved: ${subscription.endpoint.substring(0, 50)}...`);
 
@@ -57,8 +73,7 @@ exports.handler = async (event) => {
 			},
 			body: JSON.stringify({
 				success: true,
-				message: "Subscription saved (global)",
-				total: global.subscriptions.length,
+				message: "Subscription saved",
 			}),
 		};
 	} catch (error) {
