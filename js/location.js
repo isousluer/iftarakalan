@@ -32,7 +32,17 @@ const LocationManager = {
 					const coords = {
 						lat: position.coords.latitude,
 						lng: position.coords.longitude,
+						accuracy: position.coords.accuracy,
 					};
+
+					console.log("📍 Geolocation Koordinatları:", coords);
+					console.log("📍 Accuracy:", position.coords.accuracy, "metre");
+
+					// Düşük hassasiyet uyarısı (10km'den fazla)
+					if (position.coords.accuracy > 10000) {
+						console.warn("⚠️ Düşük konum hassasiyeti:", position.coords.accuracy, "metre");
+						coords.lowAccuracy = true;
+					}
 
 					// İzin verildiğini kaydet
 					Storage.saveGeolocationPermission(true);
@@ -192,7 +202,8 @@ const LocationManager = {
 			// Önce kaydedilmiş konum var mı kontrol et
 			const savedLocation = this.getSavedLocation();
 			if (savedLocation) {
-				console.log("Kaydedilmiş konum kullanılıyor:", savedLocation);
+				console.log("💾 Kaydedilmiş konum kullanılıyor:", savedLocation.sehirAdi, "/", savedLocation.ilceAdi);
+				console.log("💾 Kaynak:", savedLocation.method);
 				return savedLocation;
 			}
 
@@ -210,7 +221,14 @@ const LocationManager = {
 
 			// Koordinatlardan konum bilgisi al
 			const location = await this.getLocationFromCoords(coords.lat, coords.lng);
-			console.log("Konum belirlendi:", location);
+			console.log("✅ Konum belirlendi:", location.sehirAdi, "/", location.ilceAdi);
+			console.log("💾 Kaynak:", location.method);
+
+			// Düşük hassasiyet uyarısı
+			if (coords.lowAccuracy) {
+				location.lowAccuracy = true;
+				location.accuracyWarning = `Konum hassasiyeti düşük (${Math.round(coords.accuracy/1000)} km). Yanlış şehir gösteriliyorsa manuel seçim yapabilirsiniz.`;
+			}
 
 			return location;
 		} catch (error) {

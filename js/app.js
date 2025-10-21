@@ -110,10 +110,10 @@ const App = {
 			});
 		}
 
-		// Konum değiştir butonu
+		// Konum değiştir butonu (toggle)
 		if (this.elements.changeLocationBtn) {
 			this.elements.changeLocationBtn.addEventListener("click", () => {
-				this.showManualLocationPanel();
+				this.toggleManualLocationPanel();
 			});
 		}
 
@@ -142,6 +142,11 @@ const App = {
 			// Otomatik konum tespiti
 			const location = await LocationManager.autoDetectLocation();
 			this.state.location = location;
+
+			// Düşük hassasiyet uyarısı
+			if (location.lowAccuracy) {
+				this.showError(location.accuracyWarning);
+			}
 
 			// İlk otomatik konumu sakla (reset için)
 			if (location.method === "geolocation") {
@@ -271,6 +276,17 @@ const App = {
 			console.error("❌ Yarının iftar saati yüklenemedi:", error);
 			this.showError("Yarının iftar saati yüklenemedi.");
 			this.hideLoading();
+		}
+	},
+
+	/**
+	 * Manuel konum panelini toggle et
+	 */
+	toggleManualLocationPanel() {
+		if (this.state.showManualSelection) {
+			this.hideManualLocationPanel();
+		} else {
+			this.showManualLocationPanel();
 		}
 	},
 
