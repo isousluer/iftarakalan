@@ -450,6 +450,9 @@ const App = {
 			// Manuel paneli gizle
 			this.hideManualLocationPanel();
 
+			// Hata mesajını temizle (hassasiyet uyarısı vs.)
+			this.hideError();
+
 			// Reset butonunu göster (manuel seçim yapıldı)
 			if (this.state.autoLocation) {
 				this.showResetButton();
